@@ -301,10 +301,6 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	x_hist = g.ax_marg_x
 	y_hist = g.ax_marg_y
 
-	# main_ax = sns.kdeplot(x, y,
-		# this_df.loc[:, xlabel].values, this_df.loc[:, ylabel].values,
-				# kind="kde", 
-		# ax=main_ax, cmap="Greys")
 
 	x_hist = ax_histfill(x=x, label=xlabel, ax=x_hist, lbx=lbx, ubx=ubx, orientation='vertical')
 	y_hist = ax_histfill(x=y, label=ylabel, ax=y_hist, lbx=lby, ubx=uby, orientation='horizontal')
@@ -325,6 +321,7 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	makedirs(save_at)
 	plt.savefig(save_at)
 	release_mem(fig=fig)
+
 
 
 class corr_analysis():
@@ -456,24 +453,24 @@ def get_subaxis():
 
 
 
-def merge_2image(morph_df, df2, vmin, vmax, title, save_at, cmapdf2='jet'):
-	# from matplotlib.colors import LightSource
-	fig = plt.figure(figsize=(10, 10))
+# def merge_2image(morph_df, df2, vmin, vmax, title, save_at, cmapdf2='jet'):
+# 	# from matplotlib.colors import LightSource
+# 	fig = plt.figure(figsize=(10, 10))
 
 
-	plt.imshow(morph_df.values, cmap='binary')
-	plt.colorbar()
+# 	plt.imshow(morph_df.values, cmap='binary')
+# 	plt.colorbar()
 
-	plt.imshow(df2.values, cmap=cmapdf2, interpolation='none', 
-		vmin=vmin, vmax=vmax)
+# 	plt.imshow(df2.values, cmap=cmapdf2, interpolation='none', 
+# 		vmin=vmin, vmax=vmax)
 
-	# cmap.set_bad('white')
+# 	# cmap.set_bad('white')
 	
-	# plt.colorbar()
-	plt.xlabel('x', **axis_font)
-	plt.ylabel('y', **axis_font)
+# 	# plt.colorbar()
+# 	plt.xlabel('x', **axis_font)
+# 	plt.ylabel('y', **axis_font)
 
-	plt.title(title, **title_font)
+# 	plt.title(title, **title_font)
 
-	makedirs(save_at)
-	plt.savefig(save_at)
+# 	makedirs(save_at)
+# 	plt.savefig(save_at)
