@@ -68,7 +68,7 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
-def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None):
+def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is_save2input=False):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
 	fig = plt.figure(figsize=(10, 10))
@@ -91,7 +91,7 @@ def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None):
 	# print (img)
 	plt.imshow(values, cmap=cmap, interpolation='none', vmin=vmin, vmax=vmax)
 
-	# plt.colorbar()
+	plt.colorbar()
 	plt.xlabel('x', **axis_font)
 	plt.ylabel('y', **axis_font)
 
@@ -101,9 +101,15 @@ def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None):
 
 	makedirs(save_at)
 
-	save_file = "{0}_dens.pdf".format(save_at)
-	plt.savefig(save_file, transparent=False)
-	print ("Save file at:", save_file)
+	plt.savefig(save_at, transparent=False)
+	print ("Save file at:", save_at)
+
+	# # save to input
+	if is_save2input:
+		save_txt = save_at.replace("result", "input").replace(".pdf", ".txt")
+		makedirs(save_txt)
+		np.savetxt(save_txt, values)
+
 	release_mem(fig)
 
 
@@ -226,7 +232,7 @@ def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,
 
 
 
-def joint_plot(x, y, xlabel, ylabel, save_at):
+def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	fig = plt.figure(figsize=(20, 20))
 	# sns.set_style('ticks')
 	sns.plotting_context(font_scale=1.5)
@@ -236,24 +242,23 @@ def joint_plot(x, y, xlabel, ylabel, save_at):
 	this_df[ylabel] = y
 
 	ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
-					kind="kde", shade=True,
+					kind="kde", shade=True, color="orange",
+					xlim=xlim, ylim=ylim,
 					).set_axis_labels(xlabel, ylabel)
-
+	# ax.set_xlim(xlim)
+	# ax.set_ylim(ylim)
 	# ax.spines['right'].set_visible(False)
 	# ax.spines['top'].set_visible(False)
 	# plt.xlabel(r'%s' %xlabel, **axis_font)
 	# plt.ylabel(r'%s' %ylabel, **axis_font)
-	# plt.title(title, **self.axis_font)
+	plt.title(title, **axis_font)
 
 	# plt.set_tlabel('sigma', **axis_font)
 	# ax_setting()
-	save_file = "{0}_joint.pdf".format(save_at)
-	plt.tight_layout()
-	if not os.path.isdir(os.path.dirname(save_file)):
-		os.makedirs(os.path.dirname(save_file))
-	plt.savefig(save_file)
+	makedirs(save_at)
+	plt.savefig(save_at)
 
-	print ("Save file at:", "{0}".format(save_file))
+	print ("Save file at:", "{0}".format(save_at))
 	release_mem(fig)
 # return ax
 
