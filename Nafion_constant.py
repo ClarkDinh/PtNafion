@@ -1,13 +1,14 @@
 
 
 
-
+size_x = 512
+size_y = 512
 
 Positions = ["CCM-Nafion", "CCMcenter"]
 Times = ["Fresh", "ADT5k", "ADT15k"]
 Voltages = ["04V", "1V"]
 
-Features = ["morphology", "Pt-density", "Pt-valence" "Pt-O", "Pt-Pt"]
+Features = ["morphology", "Pt-density", "Pt-valence", "Pt-O", "Pt-Pt"]
 
 
 dP = [["CCM-Nafion", "CCMcenter"]]

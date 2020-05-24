@@ -73,10 +73,7 @@ def mechanism(fixT, fixP, fixV, diff_state, task):
 
 
 if __name__ == "__main__":
-	maindir = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion"
-	input_dir = "{}/fromQuan/v3_0520/feature".format(maindir)
-	result_dir = "{}/result".format(maindir)
-	myinput_dir = "{}/input".format(maindir)
+
 
 
 	tasks = ["diff_p"] #  "diff_t", "diff_v"

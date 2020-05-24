@@ -251,7 +251,7 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	# ax.spines['top'].set_visible(False)
 	# plt.xlabel(r'%s' %xlabel, **axis_font)
 	# plt.ylabel(r'%s' %ylabel, **axis_font)
-	plt.title(title, **axis_font)
+	# plt.title(title, **title_font)
 
 	# plt.set_tlabel('sigma', **axis_font)
 	# ax_setting()
