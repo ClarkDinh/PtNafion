@@ -349,7 +349,7 @@ def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 	return df, failed_feature
 
 
-def pos_neg_lbl_cvt(inputfile):
+def pos_neg_lbl_cvt(inputfile, is_get_zero=False):
 	try:
 		data = np.loadtxt(inputfile)
 		
@@ -361,7 +361,15 @@ def pos_neg_lbl_cvt(inputfile):
 		pass
 
 	# # get label under conditions
-	lbl = np.where(data>=0, True, False)
+	if is_get_zero:
+		# lbl_zero = np.where(data==0, 0, False)
+		lbl_pos = np.where(data>0, 1, 0)
+		lbl_neg = np.where(data<0, -1, 0)
+		lbl = lbl_neg + lbl_pos
+		
+	else:
+		lbl = np.where(data>=0, True, False)
+
 	# save_at = "{0}/tmp.pdf".format(result_dir) # for test
 	# plot_density(values=diff_PtDens_val, save_at=save_at,  # diff_PtDens_lbl
 	# 	cmap_name="bwr", vmin=None, vmax=None)
@@ -503,13 +511,13 @@ if __name__ == "__main__":
 				if task == "diff_v":
 					fixT, fixP, diff_V = comb
 					fixV = diff_V[0]
-					df, failed_feature = save_diff_2csv(fixT=fixT, fixP=fixP, fixV=fixV, 
+					df, failed_feature = save_diff_2csv(df=df, fixT=fixT, fixP=fixP, fixV=fixV, 
 						diff_state=diff_V, save_at=save_at, task=task)
 		
 				if task == "diff_t":
 					diff_T, fixP, fixV = comb
 					fixT = diff_T[0]
-					df, failed_feature = join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, 
+					df, failed_feature = save_diff_2csv(df=df, fixT=fixT, fixP=fixP, fixV=fixV, 
 						diff_state=diff_T, save_at=save_at, task=task)
 				print ("failed_feature", failed_feature)
 				all_failed_feature.append(failed_feature)

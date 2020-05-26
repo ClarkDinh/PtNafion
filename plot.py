@@ -12,6 +12,8 @@ except:
 import itertools
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import stats
+from sklearn.neighbors import KernelDensity
+
 
 axis_font = {'fontname': 'serif', 'size': 16, 'labelpad': 8}
 title_font = {'fontname': 'serif', 'size': 12}
@@ -100,6 +102,7 @@ def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is
 
 
 	makedirs(save_at)
+	fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 	plt.savefig(save_at, transparent=False)
 	print ("Save file at:", save_at)
@@ -123,14 +126,20 @@ def plot_hist(x, save_at=None, label=None, nbins=50):
 
 	# plt.bar(xs, hist,  alpha=1.0)
 	# y_plot = hist
-	y_plot, x_plot, patches = plt.hist(x, bins=nbins, histtype='step', # step, stepfilled, 'bar', 'barstacked'
+	y_plot, x_plot, patches = plt.hist(x, bins=nbins, histtype='stepfilled', # step, stepfilled, 'bar', 'barstacked'
 										density=True, label=label, log=False,  
 										color='black', #edgecolor='none',
 										alpha=1.0, linewidth=2)
 
+	# X_plot = np.linspace(np.min(x), np.max(x), 1000)[:, np.newaxis]
+	# kde = KernelDensity(kernel='gaussian', bandwidth=2).fit(x.reshape(-1, 1))
+	# log_dens = kde.score_samples(X_plot)
+	# plt.fill(X_plot[:, 0], np.exp(log_dens), fc='#AAAAFF')
+	# plt.text(-3.5, 0.31, "Gaussian Kernel Density")
+
 	#plt.xticks(np.arange(x_min, x_max, (x_max - x_min) / 30), rotation='vertical', size=6)
 	# plt.ylim([1, np.max(y_plot)*1.01])
-
+	plt.legend()
 	plt.ylabel('Probability density', **axis_font)
 	plt.xlabel("Value", **axis_font)
 
@@ -138,15 +147,13 @@ def plot_hist(x, save_at=None, label=None, nbins=50):
 
 	if save_at is not None:
 
-		save_file = "{0}_hist.pdf".format(save_at)
-
-		if not os.path.isdir(os.path.dirname(save_file)):
-			os.makedirs(os.path.dirname(save_file))
-		plt.savefig(save_file)
-		print ("Save file at:", "{0}".format(save_file))
+		if not os.path.isdir(os.path.dirname(save_at)):
+			os.makedirs(os.path.dirname(save_at))
+		plt.savefig(save_at)
+		print ("Save file at:", "{0}".format(save_at))
 		release_mem(fig)
 
-	return y_plot
+	# return y_plot
 
 
 
