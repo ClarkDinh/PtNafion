@@ -7,156 +7,12 @@ from plot import plot_density, plot_hist, makedirs, joint_plot
 from Nafion_constant import *
 from pylab import *
 
-def redox_diff_t(fixP, fixV, diff_state, task="diff_t"):
-	vmin=1
-	vmax=8 
-	init_state, final_state = diff_state
-	fix_val = "{0}{1}".format(fixP, fixV)
-
-
-	consider_Ft = "Pt-density"
-	prefix_input = fix_val + consider_Ft
-
-	diff_PtDens = "{0}/task1/{1}/{2}_{3}____{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					
-					init_state, final_state, task)
-	diff_PtDens_val, is_diff_PtDens_pos = pos_neg_lbl_cvt(inputfile=diff_PtDens)
-
-
-	consider_Ft = "Pt-valence"
-	prefix_input = fix_val + consider_Ft
-
-	diff_PtVal = "{0}/task1/{1}/{2}_{3}____{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					
-					init_state, final_state, task)
-	diff_PtVal_val, is_diff_PtVal_pos = pos_neg_lbl_cvt(inputfile=diff_PtVal)
-
-
-	consider_Ft = "Pt-Pt"
-	prefix_input = fix_val + consider_Ft
-	
-	diff_PtPt = "{0}/task1/{1}/{2}_{3}____{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					
-					init_state, final_state, task)
-	diff_PtPt_val, is_diff_PtPt_pos = pos_neg_lbl_cvt(inputfile=diff_PtPt)
-
-	# # all shape checked
-	# print ("is_diff_PtDens_pos", is_diff_PtDens_pos)
-	# print ("is_diff_PtVal_pos", is_diff_PtVal_pos)
-	# print ("is_diff_PtPt_pos", is_diff_PtPt_pos)
-
-	# # for binary label
-	# redox_state = np.where(
-	# 	((is_diff_PtDens_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
-	# 	1, -1)
-
-	# # for octary label
-	redox_states = redox_state_lbl(is_diff_PtDens_pos=is_diff_PtDens_pos, 
-		is_diff_PtVal_pos=is_diff_PtVal_pos, 
-		is_diff_PtPt_pos=is_diff_PtPt_pos)
-
-	redox_sum = sum(redox_states, axis=0)
-
-	# # to plot
-
-	cmap_name="jet"
-	prefix = "{0}/redox/{1}/{1}_{2}{3}_redox_{4}____{5}".format(result_dir,
-		task, fixP, fixV, init_state, final_state) 
-
-	save_at = prefix + ".pdf"
-	plot_density(values=redox_sum, save_at=save_at,  # diff_PtDens_lbl
-		cmap_name=cmap_name, vmin=vmin, vmax=vmax)
-
-	# # save to txt
-	save_txt = prefix.replace("result", "input") + ".txt"
-	makedirs(save_txt)
-
-	np.savetxt(save_txt, redox_sum)
-
-	for i, rst in enumerate(redox_states):
-		tmp_save_at = "{0}/redox_{1}.pdf".format(prefix, i+1)
-		plot_density(values=rst, save_at=tmp_save_at,  
-			cmap_name=cmap_name, vmin=vmin, vmax=vmax)
-
-
-
-def redox_diff_v(fixT, fixP, diff_state, task="diff_v"):
-
-	init_state, final_state = diff_state # # here is diff voltage
-	fix_val = "{0}{1}".format(fixT, fixP)
-	
-	consider_Ft = "Pt-density"
-	prefix_input = fix_val + consider_Ft
-	diff_PtDens = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					init_state, final_state)
-	diff_PtDens_val, is_diff_PtDens_pos = pos_neg_lbl_cvt(inputfile=diff_PtDens)
-
-
-
-	consider_Ft = "Pt-valence"
-	prefix_input = fix_val + consider_Ft
-	diff_PtVal = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					init_state, final_state)
-	diff_PtVal_val, is_diff_PtVal_pos = pos_neg_lbl_cvt(inputfile=diff_PtVal)
-
-
-
-	consider_Ft = "Pt-Pt"
-	prefix_input = fix_val + consider_Ft
-	diff_PtPt = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
-					task, prefix_input, 
-					init_state, final_state)
-	diff_PtPt_val, is_diff_PtPt_pos = pos_neg_lbl_cvt(inputfile=diff_PtPt)
-
-	# all shape checked
-	# print ("is_diff_PtDens_pos", diff_PtDens_val)
-	# print ("is_diff_PtVal_pos", diff_PtVal_val)
-	# print ("is_diff_PtPt_pos", diff_PtPt_val)
-
-
-	redox_states = redox_state_lbl(is_diff_PtDens_pos=is_diff_PtDens_pos, 
-		is_diff_PtVal_pos=is_diff_PtVal_pos, 
-		is_diff_PtPt_pos=is_diff_PtPt_pos)
-
-
-	redox_sum = sum(redox_states, axis=0)
-
-	# # to plot
-	vmin=1
-	vmax=8 
-	cmap_name="jet"
-	# cmap_name = cm.get_cmap('PiYG', 8)
-
-	print (redox_sum)
-
-	prefix = "{0}/redox/{1}/{2}_{3}___{4}".format(result_dir,
-		task, fix_val,  init_state, final_state) 
-
-	save_at = prefix + ".pdf"
-	plot_density(values=redox_sum, save_at=save_at,  # diff_PtDens_lbl
-		cmap_name=cmap_name, vmin=vmin, vmax=vmax)
-
-	# # save to txt
-	save_txt = prefix.replace("result", "input") + ".txt"
-	makedirs(save_txt)
-
-	np.savetxt(save_txt, redox_sum)
-
-	for i, rst in enumerate(redox_states):
-		tmp_save_at = "{0}/redox_{1}.pdf".format(prefix, i+1)
-		plot_density(values=rst, save_at=tmp_save_at,  
-			cmap_name=cmap_name, vmin=vmin, vmax=vmax)
 
 
 
 def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	# ADT5k1VPt-density_CCM-Nafion____CCMcenter.pdf
-	init_state, final_state = diff_state # # here is diff voltage
+	final_state, init_state = diff_state # # here is diff voltage
 
 	if task == "diff_p":
 		fix_val = "{0}{1}".format(fixT, fixV)
@@ -165,20 +21,19 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	if task == "diff_t":
 		fix_val = "{0}{1}".format(fixP, fixV)
 	
-	consider_Ft = "Pt-density"
+	consider_Ft = "Pt-O"
 	prefix_input = fix_val + consider_Ft
-	diff_PtDens = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
+	diff_PtO = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
-					init_state, final_state)
-	diff_PtDens_val, is_diff_PtDens_pos = pos_neg_lbl_cvt(inputfile=diff_PtDens)
-
+					final_state, init_state)
+	diff_PtO_val, is_diff_PtO_pos = pos_neg_lbl_cvt(inputfile=diff_PtO)
 
 
 	consider_Ft = "Pt-valence"
 	prefix_input = fix_val + consider_Ft
 	diff_PtVal = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
-					init_state, final_state)
+					final_state, init_state)
 	diff_PtVal_val, is_diff_PtVal_pos = pos_neg_lbl_cvt(inputfile=diff_PtVal)
 
 
@@ -187,7 +42,8 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	prefix_input = fix_val + consider_Ft
 	diff_PtPt = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
-					init_state, final_state)
+					final_state, init_state)
+
 	diff_PtPt_val, is_diff_PtPt_pos = pos_neg_lbl_cvt(inputfile=diff_PtPt)
 
 	# all shape checked
@@ -196,7 +52,7 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	# print ("is_diff_PtPt_pos", diff_PtPt_val)
 
 
-	redox_states = redox_state_lbl(is_diff_PtDens_pos=is_diff_PtDens_pos, 
+	redox_states = redox_state_lbl(is_diff_PtO_pos=is_diff_PtO_pos, 
 		is_diff_PtVal_pos=is_diff_PtVal_pos, 
 		is_diff_PtPt_pos=is_diff_PtPt_pos)
 
@@ -212,7 +68,7 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	print (redox_sum)
 
 	prefix = "{0}/redox/{1}/{2}_{3}___{4}".format(result_dir,
-		task, fix_val,  init_state, final_state) 
+		task, fix_val, final_state,  init_state) 
 
 	save_at = prefix + ".pdf"
 	plot_density(values=redox_sum, save_at=save_at,  # diff_PtDens_lbl
@@ -231,37 +87,37 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 
 
 
-def redox_state_lbl(is_diff_PtDens_pos, is_diff_PtVal_pos, is_diff_PtPt_pos):
+def redox_state_lbl(is_diff_PtO_pos, is_diff_PtVal_pos, is_diff_PtPt_pos):
 	redox_state_8 = np.where(
-		((is_diff_PtDens_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
+		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
 		8, 0)
 
 	redox_state_7 = np.where(
-		((is_diff_PtDens_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
+		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
 		7, 0)
 
 	redox_state_6 = np.where(
-		((is_diff_PtDens_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
+		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
 		6, 0)
 
 	redox_state_5 = np.where(
-		((is_diff_PtDens_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
+		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
 		5, 0)
 
 	redox_state_4 = np.where(
-		((is_diff_PtDens_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
+		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
 		4, 0)
 
 	redox_state_3 = np.where(
-		((is_diff_PtDens_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
+		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
 		3, 0)
 
 	redox_state_2 = np.where(
-		((is_diff_PtDens_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
+		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
 		2, 0)
 
 	redox_state_1 = np.where(
-		((is_diff_PtDens_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
+		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
 		1, 0)
 	redox_states = [redox_state_1, redox_state_2, redox_state_3, redox_state_4,
 				redox_state_5, redox_state_6, redox_state_7, redox_state_8]
@@ -386,9 +242,9 @@ if __name__ == "__main__":
 
 	# # in considering diff_t
 	tasks = ["diff_p", "diff_t", "diff_v"]
-	is_redox_lbl =False
+	is_redox_lbl =True
 	is_redox2dmin = False
-	is_save2csv = True
+	is_save2csv = False
 
 	if False:
 		fixT = None
@@ -438,7 +294,6 @@ if __name__ == "__main__":
 					fixT, diff_P, fixV = comb
 					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_P, task=task)
 
-				
 				if task == "diff_v":
 					fixT, fixP, diff_V = comb
 					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_V, task=task)

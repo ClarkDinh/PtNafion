@@ -36,7 +36,7 @@ def is_smaller_lbl_cvt(inputfile, top_k):
 	return data, lbl
 
 def mechanism(fixT, fixP, fixV, diff_state, task):
-	init_state, final_state = diff_state 
+	final_state, init_state = diff_state 
 
 	if task == "diff_p":
 		fix_val = "{0}{1}".format(fixT, fixV)
@@ -56,7 +56,7 @@ def mechanism(fixT, fixP, fixV, diff_state, task):
 	prefix_input = fix_val + consider_Ft
 	diff_PtDens = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
-					init_state, final_state)
+					final_state, init_state)
 	diff_PtDens_val, is_diff_PtDens_pos = pos_neg_lbl_cvt(inputfile=diff_PtDens, is_get_zero=True)
 	cond1 = is_diff_PtDens_pos
 
@@ -76,7 +76,7 @@ def mechanism(fixT, fixP, fixV, diff_state, task):
 	# # condition 3
 	# # read redox label
 	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(myinput_dir,
-		task, fix_val,  init_state, final_state)
+		task, fix_val, final_state, init_state)
 	redox_label = np.loadtxt(redox_file)
 	cond3 = redox_label
 
