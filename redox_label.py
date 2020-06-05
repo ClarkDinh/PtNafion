@@ -129,20 +129,34 @@ def redox_state_lbl(is_diff_PtO_pos, is_diff_PtVal_pos, is_diff_PtPt_pos):
 
 
 
-def join_redox_dmin(fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
-	init_state, final_state = diff_state # # here is diff voltage
+def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
+	final_state, init_state = diff_state # # here is diff voltage
 
-# dminCCM-NafionADT15k04V_morphology.txt
-# dminCCM-NafionFresh04V_morphology.txt
+
+	if task == "diff_p":
+		fix_val = "{0}{1}".format(fixT, fixV)
+	if task == "diff_v":
+		fix_val = "{0}{1}".format(fixT, fixP)
+	if task == "diff_t":
+		fix_val = "{0}{1}".format(fixP, fixV)
+
+	# dminCCM-NafionADT15k04V_morphology.txt
+	# dminCCM-NafionFresh04V_morphology.txt
 
 	# # get dmin
 	dmin_file = "{0}/task4/dmin{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
 	dmin_value = np.loadtxt(dmin_file)
 
-	save_at = "{0}/dmin_redox/{1}/{2}_{3}___{4}_redox.pdf".format(result_dir,
-		task, fix_val,  init_state, final_state) 
+	# # get redox value
+	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(myinput_dir,
+		task, fix_val, final_state, init_state)
+	redox_label = np.loadtxt(redox_file)
 
-	joint_plot(x=dmin_value.ravel(), y=redox_value.ravel(), 
+
+	save_at = "{0}/dmin_redox/{1}/{2}_{3}___{4}_redox.pdf".format(result_dir,
+		task, fix_val, final_state,  init_state) 
+
+	joint_plot(x=dmin_value.ravel(), y=redox_label.ravel(), 
 		xlabel="dmin_{0}{1}{2}".format(fixP, fixT, fixV), ylabel="redox_state", 
 		xlim=[-2, 40], ylim=None,
 		title=save_at.replace(result_dir, ""),
@@ -150,7 +164,7 @@ def join_redox_dmin(fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 
 
 def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
-	init_state, final_state = diff_state # # here is diff voltage
+	final_state, init_state = diff_state 
 
 	if task == "diff_p":
 		fix_val = "{0}{1}".format(fixT, fixV)
@@ -163,13 +177,10 @@ def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 	failed_feature = []
 	for consider_Ft in Features:
 		prefix_input = fix_val + consider_Ft
-		# diff_val_file = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
-		# 			task, prefix_input, 
-		# 			init_state, final_state)
 
 		diff_val_file = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
-					init_state, final_state)
+					final_state, init_state)
 		
 		diff_val, is_diff_val_pos = pos_neg_lbl_cvt(inputfile=diff_val_file)
 
@@ -183,7 +194,7 @@ def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 
 	# # save redox value
 	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(myinput_dir,
-		task, fix_val,  init_state, final_state) 
+		task, fix_val, final_state, init_state) 
 	redox_value = np.loadtxt(redox_file)
 	feature_name = redox_file.replace(myinput_dir, "")
 	df[feature_name] = redox_value.ravel()
@@ -236,14 +247,14 @@ def pos_neg_lbl_cvt(inputfile, is_get_zero=False):
 
 if __name__ == "__main__":
 	maindir = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion"
-	input_dir = "{}/fromQuan/v3_0520/feature".format(maindir)
+	input_dir = "{}/fromQuan/v4_0526/feature".format(maindir)
 	result_dir = "{}/result".format(maindir)
 	myinput_dir = "{}/input".format(maindir)
 
 	# # in considering diff_t
 	tasks = ["diff_p", "diff_t", "diff_v"]
-	is_redox_lbl =True
-	is_redox2dmin = False
+	is_redox_lbl = False
+	is_redox2dmin = True
 	is_save2csv = False
 
 	if False:
