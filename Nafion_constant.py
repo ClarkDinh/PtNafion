@@ -16,6 +16,8 @@ dT = [["Fresh", "ADT5k"], ["Fresh", "ADT15k"], ["ADT5k", "ADT15k"]]
 dT_tunes = [["Fresh", "ADT15k"]]
 
 dV = [["04V", "1V"]]
+dV_tunes = [["1V"]]
+
 
 
 maindir = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion"

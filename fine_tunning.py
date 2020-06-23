@@ -43,7 +43,7 @@ def task1_struct_params_vs_dmin(task, fixP, fixT, fixV):
         min_y = np.min(y) * 0.9 - 0.1
         max_y = np.max(y) * 1.1 + 0.1
         if feature == "morphology":
-            ft_val = ft_val*1000 
+            y = y*1000 
             ylabel = feature+"(*10^3)"
             min_y = -1 
             max_y = 4 
@@ -57,18 +57,18 @@ def task1_struct_params_vs_dmin(task, fixP, fixT, fixV):
 
         save_at = "{0}/new_request/{1}/".format(result_dir,task)+feature+"_"+fixP+"_"+fixT+"_"+fixV+".pdf"
 
-        try:
-            joint_plot_fill(x=dmin_value, y=ft_val,
-                xlabel=xlabel, ylabel=ylabel, save_at=save_at, 
-                lbx=-2, ubx=40, lby=min_y, uby=max_y)
-        except Exception as e:
-            joint_plot(x=dmin_value, y=ft_val, 
-                    xlabel=xlabel, 
-                    ylabel=ylabel, 
-                    xlim=[-2, 40], 
-                    ylim=[min_y, max_y],
-                    title=save_at.replace(result_dir, ""),
-                    save_at=save_at)
+        # try:
+        #     joint_plot_fill(x=dmin_value, y=ft_val,
+        #         xlabel=xlabel, ylabel=ylabel, save_at=save_at, 
+        #         lbx=-2, ubx=40, lby=min_y, uby=max_y)
+        # except Exception as e:
+        joint_plot(x=x, y=y, 
+                xlabel=xlabel, 
+                ylabel=ylabel, 
+                xlim=[-2, 40], 
+                ylim=[min_y, max_y],
+                title=save_at.replace(result_dir, ""),
+                save_at=save_at)
 
         # joint_plot_fill(, , 
         #     str(name[0]), str(name[1]), path + "image/task5/joint_org/{}___{}.pdf".format(str(name[0]),str(name[1])) , min_x ,max_x,min_y,max_y )
@@ -95,16 +95,16 @@ def task2_deltaPT_vs_dmin(fixT, fixP, fixV, diff_state, task):
     consider_Ft = "Pt-density"
     prefix_input = fix_val + consider_Ft
     diff_Ptdens = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
-                    task, prefix_input, 
+                    "diff_t", prefix_input, 
                     final_state, init_state)
-    diff_PtO_val, is_diff_PtO_pos = pos_neg_lbl_cvt(inputfile=diff_Ptdens)
+    diff_Ptdens_val, is_diff_Ptdens_pos = pos_neg_lbl_cvt(inputfile=diff_Ptdens)
 
 
     save_at = "{0}/new_request/{1}/{2}_{3}___{4}_redox.pdf".format(result_dir,
         task, fix_val, final_state,  init_state) 
 
-    joint_plot(x=dmin_value.ravel(), y=redox_label.ravel(), 
-        xlabel="dmin_{0}{1}{2}".format(fixP, fixT, fixV), ylabel="redox_state", 
+    joint_plot(x=dmin_value.ravel(), y=diff_Ptdens_val.ravel(), 
+        xlabel="dmin", ylabel="consider_Ft", 
         xlim=[-2, 40], ylim=None,
         title=save_at.replace(result_dir, ""),
         save_at=save_at)
@@ -113,7 +113,7 @@ def task2_deltaPT_vs_dmin(fixT, fixP, fixV, diff_state, task):
 
 def main():
     # # task 1
-    task = "task2_deltaPt" # task2_deltaPt
+    task = "task1_dmin_corr" # task1_dmin_corr, task2_deltaPt
 
     if task == "task1_dmin_corr":
         fixV = "04V"

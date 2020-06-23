@@ -21,7 +21,8 @@ size_point = 3
 alpha_point = 0.3
 n_neighbor = 3
 
-sns.palplot(sns.hls_palette(8, l=.3, s=.8))
+sns.palplot("dark")
+sns.set_style('ticks')
 
 def release_mem(fig):
 	fig.clf()
@@ -158,8 +159,7 @@ def plot_hist(x, save_at=None, label=None, nbins=50):
 
 
 
-def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False, 
-				is_gmm=True, n_components_gmm=3, save_gmm_file=None,
+def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,  is_gmm=True, n_components_gmm=3, save_gmm_file=None,
 				means_init=None, weighs_init=None):
 	from opt_GMM import opt_GMM
 
@@ -241,25 +241,50 @@ def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,
 
 
 def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
-	fig = plt.figure(figsize=(20, 20))
+	import scipy.stats as st
+
+	fig = plt.figure(figsize=(8, 8))
 	# sns.set_style('ticks')
 	sns.plotting_context(font_scale=1.5)
 	this_df = pd.DataFrame()
 	
 	this_df[xlabel] = x
 	this_df[ylabel] = y
-	try:
-		ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
-					kind="kde", shade=True, 
-					color="green",
-					xlim=xlim, ylim=ylim)
-	except Exception as e:
-		ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
-					kind="hex",  # shade=True, 
-					color="green",
-					xlim=xlim, ylim=ylim)
-	
+	# try:
+		# g = sns.jointplot(this_df[xlabel], this_df[ylabel],
+		# 			kind="kde", shade=True, 
+		# 			color="green",
+		# 			xlim=xlim, ylim=ylim)
 
+	# plt.hist2d(x,y,100,cmap='jet')
+	xx, yy = np.mgrid[xlim[0]:xlim[1]:100j, ylim[0]:ylim[1]:100j]
+	positions = np.vstack([xx.ravel(), yy.ravel()])
+	values = np.vstack([x, y])
+	kernel = st.gaussian_kde(values)
+	f = np.reshape(kernel(positions).T, xx.shape)
+
+	ax = fig.gca()
+	ax.set_xlim(xlim)
+	ax.set_ylim(ylim)
+	# Contourf plot
+	cfset = ax.contourf(xx, yy, f, cmap='jet')
+	## Or kernel density estimate plot instead of the contourf plot
+	#ax.imshow(np.rot90(f), cmap='Blues', extent=[xmin, xmax, ymin, ymax])
+	# Contour plot
+	cset = ax.contour(xx, yy, f, colors='k')
+	# Label plot
+	ax.clabel(cset, inline=1, fontsize=10)
+	# ax.set_xlabel(xlabel)
+	# ax.set_ylabel(ylabel)
+	# except Exception as e:
+	# 	g = sns.jointplot(this_df[xlabel], this_df[ylabel],
+	# 				kind="hex",  # shade=True, 
+	# 				color="green",
+	# 				xlim=xlim, ylim=ylim)
+
+	
+	# g.ax_marg_x.set_axis_off()
+	# g.ax_marg_y.set_axis_off()
 	# ax.set_xlabel(xlabel, **axis_font)
 	# ax.set_ylabel(ylabel, **axis_font)
 
@@ -267,14 +292,15 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	# ax.set_ylim(ylim)
 	# ax.spines['right'].set_visible(False)
 	# ax.spines['top'].set_visible(False)
-	# plt.xlabel(r'%s' %xlabel, **axis_font)
-	# plt.ylabel(r'%s' %ylabel, **axis_font)
-	# plt.title(title, **title_font)
+	plt.xlabel(r'%s' %xlabel, **axis_font)
+	plt.ylabel(r'%s' %ylabel, **axis_font)
+	plt.title(title, **title_font)
 
 	# plt.set_tlabel('sigma', **axis_font)
 	# ax_setting()
 	makedirs(save_at)
 	plt.savefig(save_at)
+	plt.tight_layout(pad=1.1)
 
 	print ("Save file at:", "{0}".format(save_at))
 	release_mem(fig)
@@ -308,34 +334,38 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	y_hist = fig.add_subplot(grid[1:, -1], xticklabels=[], sharey=main_ax)
 	x_hist = fig.add_subplot(grid[0, :-1], yticklabels=[], sharex=main_ax)
 	
-
+	sns.palplot("muted")
 	sns.set_style('ticks')
 
 	df = pd.DataFrame()
 	df[xlabel] = x
 	df[ylabel] = y
 	# print (this_df)
-	g = sns.jointplot(df[xlabel], df[ylabel],
-                     kind="kde", #ax=main_ax,
-                     color="green",
-                     # cmap="jet",
-                     stat_func=None, n_levels=20, # GnBu
-                     shade=True)
-
-	x_hist = g.ax_marg_x
-	y_hist = g.ax_marg_y
-
-
-	x_hist = ax_histfill(x=x, label=xlabel, ax=x_hist, lbx=lbx, ubx=ubx, orientation='vertical')
-	y_hist = ax_histfill(x=y, label=ylabel, ax=y_hist, lbx=lby, ubx=uby, orientation='horizontal')
-	main_ax.tick_params(axis='both', labelsize=10)
-	main_ax.set_xlabel(xlabel, **axis_font)
-	main_ax.set_ylabel(ylabel, **axis_font)
+	# g = sns.jointplot(df[xlabel], df[ylabel],
+ #                     kind="kde", #ax=main_ax,
+ #                     color="green",
+ #                     # cmap="jet",
+ #                     stat_func=None, n_levels=20, # GnBu
+ #                     shade=True)
+	g = sns.JointGrid(df[xlabel], df[ylabel], ratio=100,
+				# kind="kde", shade=True, 
+				# color="green",
+				xlim=xlim, ylim=ylim)
+	g.plot_joint(sns.kdeplot)
+	g.ax_marg_x.set_axis_off()
+	g.ax_marg_y.set_axis_off()
 
 
+	# x_hist = g.ax_marg_x
+	# y_hist = g.ax_marg_y
+	# x_hist = ax_histfill(x=x, label=xlabel, ax=x_hist, lbx=lbx, ubx=ubx, orientation='vertical')
+	# y_hist = ax_histfill(x=y, label=ylabel, ax=y_hist, lbx=lby, ubx=uby, orientation='horizontal')
+	# main_ax.tick_params(axis='both', labelsize=10)
+	# main_ax.set_xlabel(xlabel, **axis_font)
+	# main_ax.set_ylabel(ylabel, **axis_font)
 
-	plt.setp(x_hist.get_xticklabels(), visible=False)
-	plt.setp(y_hist.get_yticklabels(), visible=False)
+	# plt.setp(x_hist.get_xticklabels(), visible=False)
+	# plt.setp(y_hist.get_yticklabels(), visible=False)
 	
 
 	# sns.jointplot(x, y,kind="kde", shade=True)
