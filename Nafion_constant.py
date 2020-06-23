@@ -2,7 +2,7 @@
 
 
 size_x = 512
-size_y = 512
+size_y = 512 
 
 Positions = ["CCM-Nafion", "CCMcenter"]
 Times = ["Fresh", "ADT5k", "ADT15k"]
@@ -13,6 +13,8 @@ Features = ["morphology", "Pt-density", "Pt-valence", "Pt-O", "Pt-Pt"]
 
 dP = [["CCM-Nafion", "CCMcenter"]]
 dT = [["Fresh", "ADT5k"], ["Fresh", "ADT15k"], ["ADT5k", "ADT15k"]]
+dT_tunes = [["Fresh", "ADT15k"]]
+
 dV = [["04V", "1V"]]
 
 

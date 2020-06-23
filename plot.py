@@ -21,6 +21,7 @@ size_point = 3
 alpha_point = 0.3
 n_neighbor = 3
 
+sns.palplot(sns.hls_palette(8, l=.3, s=.8))
 
 def release_mem(fig):
 	fig.clf()
@@ -247,11 +248,21 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	
 	this_df[xlabel] = x
 	this_df[ylabel] = y
+	try:
+		ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
+					kind="kde", shade=True, 
+					color="green",
+					xlim=xlim, ylim=ylim)
+	except Exception as e:
+		ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
+					kind="hex",  # shade=True, 
+					color="green",
+					xlim=xlim, ylim=ylim)
+	
 
-	ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
-					kind="kde", shade=True, color="orange",
-					xlim=xlim, ylim=ylim,
-					).set_axis_labels(xlabel, ylabel)
+	# ax.set_xlabel(xlabel, **axis_font)
+	# ax.set_ylabel(ylabel, **axis_font)
+
 	# ax.set_xlim(xlim)
 	# ax.set_ylim(ylim)
 	# ax.spines['right'].set_visible(False)
@@ -267,7 +278,6 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 
 	print ("Save file at:", "{0}".format(save_at))
 	release_mem(fig)
-# return ax
 
 
 
@@ -307,7 +317,9 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	# print (this_df)
 	g = sns.jointplot(df[xlabel], df[ylabel],
                      kind="kde", #ax=main_ax,
-                     cmap="Greys", stat_func=None, n_levels=20, # GnBu
+                     color="green",
+                     # cmap="jet",
+                     stat_func=None, n_levels=20, # GnBu
                      shade=True)
 
 	x_hist = g.ax_marg_x
