@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 import matplotlib.patches as mpatches
 
-from plot import joint_plot, ax_setting, makedirs, release_mem, plot_density
+from plot import joint_plot_1, ax_setting, makedirs, release_mem, plot_density
 
 colors = ["Blues", "Greens", "Oranges", "Reds"]
 axis_font = {'fontname': 'serif', 'size': 16, 'labelpad': 8}

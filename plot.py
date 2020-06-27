@@ -10,8 +10,10 @@ try:
 except:
 	pass
 import itertools
-from mpl_toolkits.mplot3d import Axes3D
 from scipy import stats
+from sklearn import mixture
+from matplotlib.colors import LogNorm
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.neighbors import KernelDensity
 
 
@@ -31,10 +33,17 @@ def release_mem(fig):
 
 
 
-def ax_setting():
+def ax_setting(ax):
 	plt.style.use('default')
 	plt.tick_params(axis='x', which='major', labelsize=13)
 	plt.tick_params(axis='y', which='major', labelsize=13)
+	if ax is not None:
+		ax.tick_params(axis="x", direction='in', width=2, length=20)
+		ax.tick_params(axis="y", direction='in', width=2, length=20)
+		ax2 = ax.twinx()
+		ax3 = ax.twiny()
+		ax2.tick_params(axis="y", direction="in", width=2, length=20, labelcolor="white")
+		ax3.tick_params(axis="x", direction='in', width=2, length=20, labelcolor="white")
 
 
 def makedirs(file):
@@ -75,7 +84,7 @@ def ax_setting_3d(ax):
 def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is_save2input=False):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
-	fig = plt.figure(figsize=(10, 10))
+	fig = plt.figure(figsize=(10, 10), dpi=300)
 
 	if vmin is None and vmax is None:
 		max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
@@ -101,7 +110,9 @@ def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is
 
 	title = save_at[save_at.find('result/') + len('result/'): ]
 	plt.title(title, **title_font)
-
+	ax = plt.gca()
+	ax.axes.xaxis.set_visible(False)
+	ax.axes.yaxis.set_visible(False)
 
 	makedirs(save_at)
 	fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -218,11 +229,11 @@ def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,  is_gmm=True, n_com
 		
 		# plot gaussian components
 		colors = ["red", "blue", "green", "black", "orange", 
-				  "brown", "purple", "cyan", "teal", "wheat", 'mediumslateblue', 
-				  'mediumspringgreen', 'mediumturquoise', 'mediumvioletred',  
-				  'mintcream', 'mistyrose', 'moccasin', 'slateblue', 'slategray', 
-				  'slategrey', 'snow', 'springgreen', 'steelblue', 
-				  'tan', 'teal', 'thistle', 'tomato',]
+					"brown", "purple", "cyan", "teal", "wheat", 'mediumslateblue', 
+					'mediumspringgreen', 'mediumturquoise', 'mediumvioletred',  
+					'mintcream', 'mistyrose', 'moccasin', 'slateblue', 'slategray', 
+					'slategrey', 'snow', 'springgreen', 'steelblue', 
+					'tan', 'teal', 'thistle', 'tomato',]
 		for ii, (w, m, c, cl) in enumerate(zip(weights, means, covars, colors)):
 			# print (test_point, w, m, c)
 			this_X_plt = X_kde
@@ -240,7 +251,7 @@ def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,  is_gmm=True, n_com
 
 
 
-def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
+def joint_plot_1(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	import scipy.stats as st
 
 	fig = plt.figure(figsize=(8, 8))
@@ -267,7 +278,7 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	ax.set_xlim(xlim)
 	ax.set_ylim(ylim)
 	# Contourf plot
-	cfset = ax.contourf(xx, yy, f, cmap='jet')
+	cfset = ax.contourf(xx, yy, f, cmap='Oranges')
 	## Or kernel density estimate plot instead of the contourf plot
 	#ax.imshow(np.rot90(f), cmap='Blues', extent=[xmin, xmax, ymin, ymax])
 	# Contour plot
@@ -304,6 +315,102 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 
 	print ("Save file at:", "{0}".format(save_at))
 	release_mem(fig)
+
+
+def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at, is_show=False):
+	fig = plt.figure(figsize=(12, 12))
+	# sns.set_style('ticks')
+	sns.plotting_context(font_scale=1.5)
+	this_df = pd.DataFrame()
+	
+	this_df[xlabel] = x
+	this_df[ylabel] = y
+
+	ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
+					kind="kde",  shade=True, # hex
+					xlim=xlim, ylim=ylim,
+					color='orange',).set_axis_labels(xlabel, ylabel)
+
+	# ax = ax.plot_joint(plt.scatter,
+	# 			  color="grey", s=2, edgecolor=None)
+	# ax.scatter(x, y, s=30, alpha=0.5, c='red')
+	# ax.spines['right'].set_visible(False)
+	# ax.spines['top'].set_visible(False)
+	# plt.xlabel(r'%s' %xlabel, **axis_font)
+	# plt.ylabel(r'%s' %ylabel, **axis_font)
+	# ax.title(title, title_font)
+
+	# plt.set_tlabel('sigma', **axis_font)
+	# ax_setting(ax)
+	# plt.yticks(np.arange(0, ylim[1], 10)) # fontsize=12
+	plt.subplots_adjust(top=1.1)
+	ax.fig.suptitle(title) 
+	plt.yticks(np.arange(0, ylim[1], 1)) # # Ptdens: 10, valence: 0.5, Pt-Pt: 2
+
+	# ax.setxlim(xlim)
+	# # ax.setylim(ylim)
+	# ax.set_xticks(np.arange(0, xlim[1], 10))
+	# ax.set_yticks(np.arange(0, ylim[1], 10))
+
+	plt.tight_layout(pad=2.5)
+	if not os.path.isdir(os.path.dirname(save_at)):
+		os.makedirs(os.path.dirname(save_at))
+	plt.savefig(save_at)
+	if is_show:
+		plt.show()
+
+	print ("Save file at:", "{0}".format(save_at))
+	release_mem(fig)
+
+
+def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
+
+	df = pd.DataFrame()
+	df[xlabel] = x
+	df[ylabel] = y
+	
+	X = df[[xlabel,ylabel]].values
+	gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
+	y_pred = gmm.predict(X)
+	
+	# colors = [convert[k] for k in stable_lbl]
+	fig, ax=plt.subplots(figsize=(12, 12))
+
+	# Draw contour
+	x_c = np.linspace(xlim[0], xlim[1], 100)
+	y_c = np.linspace(ylim[0], ylim[1], 100) #d6-s2
+	X, Y = np.meshgrid(x_c, y_c)
+	XX = np.array([X.ravel(), Y.ravel()]).T
+	Z = - gmm.score_samples(XX)
+	Z = Z.reshape(X.shape)
+
+	CS = plt.contour(X, Y, Z, norm=LogNorm(vmin=1.0, vmax=1000.0),
+									colors="grey", #linestyles="dashdot",
+									levels=np.logspace(0, 3, 15))
+	ax.clabel(CS, inline=1, fontsize=20)
+	plt.pcolormesh(X, Y, Z, cmap = plt.get_cmap('Oranges'), # Greys, Oranges
+									alpha=0.7
+									) # Greens
+	# hot, coolwarm, bwr, OrRd, Greys, GnBu, plasma, summer
+	# plt.gca().yaxis.set_major_formatter(StrMethodFormatter('{x:,.1f}'))
+#     plt.yticks(np.arange(np.min(y), np.max(y) + 0.5, 1.0)) #d6-s2
+	plt.scatter(x, y, color="grey",# label=state, 
+                alpha=0.6, s=2, marker="o",
+                linewidths=0.1, edgecolors=None)
+	plt.xlabel(r'%s' %xlabel, **axis_font)
+	plt.ylabel(r'%s' %ylabel, **axis_font)
+	plt.yticks(np.arange(0, ylim[1], 10)) # # Ptdens: 10, valence: 0.5, Pt-Pt: 2
+	plt.xticks(np.arange(0, xlim[1], 10))
+	plt.title(title, **title_font)
+
+	print(np.min(y), np.max(y), np.min(x), np.max(x))
+	ax_setting(ax)
+	plt.tight_layout(pad=1.1)
+	makedirs(save_at)
+	plt.savefig(save_at)
+	release_mem(fig)
+
+
 
 
 
@@ -375,8 +482,6 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	makedirs(save_at)
 	plt.savefig(save_at)
 	release_mem(fig=fig)
-
-
 
 class corr_analysis():
 	def __init__(self, data_file, threshold_pearson, threshold_spearman, all_variable, out_dir):
@@ -486,12 +591,6 @@ class corr_analysis():
 			plt.savefig("%s/%s.eps" %(self.out_dir, type_))
 			release_mem(fig)
 
-
-
-
-
-
-
 def get_subaxis():
 	fig = plt.figure(figsize=(8, 8))
 	grid = plt.GridSpec(4, 4, hspace=0.3, wspace=0.3)
@@ -502,9 +601,6 @@ def get_subaxis():
 
 
 	return main_ax, x_axis. y_axis
-
-
-
 
 
 # def merge_2image(morph_df, df2, vmin, vmax, title, save_at, cmapdf2='jet'):

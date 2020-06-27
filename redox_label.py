@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time, gc, os, itertools
 import pandas as pd
 
-from plot import plot_density, plot_hist, makedirs, joint_plot
+from plot import plot_density, plot_hist, makedirs, joint_plot_1
 from Nafion_constant import *
 from pylab import * 
 
