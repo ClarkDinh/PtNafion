@@ -1,5 +1,7 @@
 import sys
-path = "/home/s1810235/part_time/PtNafion/"
+# path = "/home/s1810235/part_time/PtNafion/"
+path = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion/input/2020-06-17-NewRequest/txt/"
+
 sys.path.insert(0, path)
 from plot import plot_density
 import os

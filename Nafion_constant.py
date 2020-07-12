@@ -26,6 +26,25 @@ result_dir = "{}/result".format(maindir)
 myinput_dir = "{}/input".format(maindir)
 
 
+min_Ptdens, max_Ptdens = 0.0, 0.002# 0.005
+min_Ptval, max_Ptval = 0.0, 1.25 #
+min_PtPt, max_PtPt = 0.0, 12 # 
+min_morph, max_morph = 0.0, 0.002 # 0.025
+min_PtO, max_PtO = 0.0, 0.3 # 1.5
+
+norm_value_range = { 
+	"Pt-density": (min_Ptdens, max_Ptdens), # (0.0, 0.0041548326), 
+	"Pt-valence": (min_Ptval, max_Ptval), # (0.0, 1.219965), 
+	"Pt-Pt": (min_PtPt, max_PtPt), # (0.0, 11.999759), 
+	"Pt-O": (min_PtO, max_PtO), # (0.0, 1.999747)
+	"morphology": (min_morph, max_morph), # (0.0, 0.0037971088), 
+}
+
+def get_vmin_vmax_diff(feature):
+	lb, ub = norm_value_range[feature]
+	vmin, vmax = -ub, ub
+	return (vmin, vmax)
+
 def get_org_dir(p, feature, t, v, ftype="txt"):
 	orgdir = "{0}/{1}/{2}/{3}{4}_{2}.{5}".format(myinput_dir, 
 		p, feature, t, v, ftype)

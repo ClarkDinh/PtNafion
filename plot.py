@@ -81,7 +81,7 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
-def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is_save2input=False):
+def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=None, is_save2input=False):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
 	fig = plt.figure(figsize=(10, 10), dpi=300)
@@ -108,7 +108,7 @@ def plot_density(values, save_at,  cmap_name="Oranges", vmin=None, vmax=None, is
 	plt.xlabel('x', **axis_font)
 	plt.ylabel('y', **axis_font)
 
-	title = save_at[save_at.find('result/') + len('result/'): ]
+	# title = save_at[save_at.find('result/') + len('result/'): ]
 	plt.title(title, **title_font)
 	ax = plt.gca()
 	ax.axes.xaxis.set_visible(False)

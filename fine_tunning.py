@@ -15,6 +15,7 @@ from redox_label import redox_state_lbl
 import copy
 
 dmin_calc_dir = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion/fromQuan/v4_0526/feature/task4"
+dmin_calc_dir = "//Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion/input/2020-06-17-NewRequest/txt/feature/task4"
 
 def get_dmin(fixP, fixT, fixV):
     dmin_file = "{0}/task4/dmin{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
