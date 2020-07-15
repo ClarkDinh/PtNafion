@@ -46,25 +46,28 @@ def main_ax_plot(x,y,ax,xlbl,ylbl,color,ax_type):
     #     # label=lbl
     #     )
     if ax_type == "kde":
-        # ax = sns.kdeplot(x1, x2,
-        #      #joint_kws={"colors": "black", "cmap": None, "linewidths": 0.5},
-        #      cmap=colors,
-        #      shade=False, shade_lowest=False,
-        #      # n_levels=levels,
-        #      fontsize=10,
-        #      ax=ax,
-        #      # vertical=True
-        #      )
+        ax.scatter(x, y, color="grey",# label=state, 
+                alpha=0.1, s=1, # marker="o",
+                # linewidths=0.1,
+                edgecolors=None)
+        ax = sns.kdeplot(x1, x2,
+             #joint_kws={"colors": "black", "cmap": None, "linewidths": 0.5},
+             cmap=colors,
+             shade=False, shade_lowest=True,
+             n_levels=10,
+             fontsize=10,
+             ax=ax,
+             # vertical=True
+             )
+
         
-
-
-        x_c = np.linspace(np.min(x)-0.1, np.max(x)+0.1, 100)
-        y_c = np.linspace(np.min(y)-0.5, np.max(y)+0.5, 100)
-        X, Y = np.meshgrid(x_c, y_c)
-        XX = np.array([X.ravel(), Y.ravel()]).T
-        gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(np.array([x,y]))
-        Z = - gmm.score_samples(XX)
-        Z = Z.reshape(X.shape)
+        # x_c = np.linspace(np.min(x)-0.1, np.max(x)+0.1, 100)
+        # y_c = np.linspace(np.min(y)-0.5, np.max(y)+0.5, 100)
+        # X, Y = np.meshgrid(x_c, y_c)
+        # XX = np.array([X.ravel(), Y.ravel()]).T
+        # gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(np.array([x,y]))
+        # Z = - gmm.score_samples(XX)
+        # Z = Z.reshape(X.shape)
     
         # xmin = np.min(x)
         # xmax = np.max(x)
@@ -73,10 +76,11 @@ def main_ax_plot(x,y,ax,xlbl,ylbl,color,ax_type):
         # X, Y = np.mgrid[xmin:xmax:10j, ymin:ymax:10j]
         # positions = np.vstack([X.ravel(), Y.ravel()])
         # values = np.vstack([x, y])
-        # kernel = stats.gaussian_kde(values)
+        # kernel = stats.gaussian_kde(values, bw_method="silverman")
         # Z = np.reshape(kernel(positions).T, X.shape)
-        ax.imshow(Z, cmap=plt.cm.gist_earth_r,
-           extent=[xmin, xmax, ymin, ymax])
+        # ax.imshow(np.rot90(Z), cmap=plt.cm.gist_earth_r,
+        #    # extent=[xmin, xmax, ymin, ymax]
+        #    )
         # ax.plot(x, y, 'k.', markersize=1)
 
     elif ax_type == "scatter":
@@ -123,7 +127,7 @@ def main_ax_plot(x,y,ax,xlbl,ylbl,color,ax_type):
                 # whiskerprops={'linewidth':2, "zorder":10},
                 widths=0.5, meanline=True, 
                 showfliers=True, showbox=True, showmeans=True)
-            ax.text( mean, glbl, mean,
+            ax.text(mean, glbl, mean,
                 horizontalalignment='center', size='x-small', 
                 color='black', weight='semibold')
 
@@ -166,7 +170,7 @@ def plot_joinmap(df, selected_inst, xlbl, ylbl, color="blue",
     # # # # # # # # # # # # # # # # # # # # # # #
     main_ax = main_ax_plot(x=df.loc[selected_inst, xlbl].values,y=df.loc[selected_inst, ylbl].values,
             ax=main_ax,xlbl=xlbl,ylbl=ylbl,color=color,ax_type=main_ax_type)
-    # main_ax.axhline(y=0.0, linestyle="-.", c="red", xmin=xlim[0], xmax=xlim[1])
+    main_ax.axhline(y=0.0, linestyle="-.", c="red", xmin=xlim[0], xmax=xlim[1])
     if xlbl_2fig is not None and ylbl_2fig is not None:
         is_add_latex = True # if use in Latex format
 
@@ -240,6 +244,8 @@ def task1_struct_params_vs_dmin(task, fixP, fixT, fixV):
 
         ft_file, save_at, save_at_sb = task1_get_ftfile_saveat(task, fixP, fixT, fixV, feature)
         ft_val = np.loadtxt(ft_file).ravel()
+        # ft_val =ft_val*100
+
         dmin_value_copy = copy.copy(dmin_value)
         bkg_idx = np.where(dmin_value==-50)[0]
 
@@ -303,8 +309,8 @@ def task2_deltaPT_vs_dmin(fixT, fixP, fixV, diff_state, task):
     # bkg_idx = np.where(morph_val=="bkg")[0]
 
 
-    save_at = "{0}/new_request_3/task2_deltaPt/dmin_Ptdens_{1}_{2}_{3}___{4}.pdf".format(result_dir,
-        task, fix_val, final_state,  init_state) 
+    save_at = "{0}/new_request_3/task2_deltaPt_at{5}/dmin_Ptdens_{1}_{2}_{3}___{4}.pdf".format(result_dir,
+        task, fix_val, final_state,  init_state, fixT) 
 
 
     dmin_value = get_dmin(fixP, fixT, fixV)
@@ -323,11 +329,12 @@ def task2_deltaPT_vs_dmin(fixT, fixP, fixV, diff_state, task):
     xlim=[-2, 50]
     ylim=(-max_Ptdens, max_Ptdens)
     plot_joinmap(df_Ptdens, selected_inst=None, xlbl=xlabel, ylbl=ylabel, 
-            xlbl_2fig="Distance to surface", ylbl_2fig=ylabel, color="blue",
+            xlbl_2fig="Distance to surface at\n"+fixP+fixT+fixV, ylbl_2fig=ylabel, color="blue",
             save_at=save_at, 
             is_gmm_xhist=False, is_gmm_yhist=False, 
             means=None, weight=None, cov_matrix=None, 
-            n_components=None, xlim=xlim, ylim=ylim)
+            n_components=None, xlim=xlim, ylim=ylim,
+            main_ax_type="kde")
 
  
 def task3_reaction_mode(fixT, fixP, fixV, diff_state):
@@ -423,7 +430,7 @@ def task3_reaction_mode(fixT, fixP, fixV, diff_state):
 
 def main():
     # # task 1
-    task = "task1_dmin_corr" # task1_dmin_corr, task2_deltaPt, task3
+    task = "task2_deltaPt" # task1_dmin_corr, task2_deltaPt, task3
 
     if task == "task1_dmin_corr":
         fixV = "04V"
