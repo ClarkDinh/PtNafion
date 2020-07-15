@@ -228,7 +228,6 @@ def plot_joinmap(df, selected_inst, xlbl, ylbl, new_labels, gmm_var,
                 savedir=None, 
                 is_gmm_xhist=True, is_gmm_yhist=True, 
                 means=None, weight=None, cov_matrix=None, 
-                
                 n_components=None, xlim=None, ylim=None):
     fig = plt.figure(figsize=(8, 8))
     grid = plt.GridSpec(4, 4, hspace=0.3, wspace=0.3)
@@ -239,7 +238,8 @@ def plot_joinmap(df, selected_inst, xlbl, ylbl, new_labels, gmm_var,
 
     sns.set_style('ticks')
 
-
+    if selected_inst is None:
+        selected_inst = df.index
     # # # # # # # # # # # # # # # # # # # # # # #
     #
     # plot kde contour of each components
@@ -282,7 +282,6 @@ def plot_joinmap(df, selected_inst, xlbl, ylbl, new_labels, gmm_var,
     #
     # # # # # # # # # # # # # # # # # # # # # # #
     if is_gmm_yhist:
-
         plot_sub_gmm(means=means, weights=weight, covars=cov_matrix,
                   data=df.loc[selected_inst, ylbl].values, ax=y_hist, n_components=n_components,
                   orientation='horizontal')

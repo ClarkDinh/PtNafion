@@ -6,9 +6,15 @@ import pandas as pd
 from plot import plot_density, plot_hist, makedirs, joint_plot_1
 from Nafion_constant import *
 from pylab import * 
+from fine_tunning import plot_joinmap
+import copy
+# from fine_tunning import get_dmin
 
 
-
+def get_dmin(fixP, fixT, fixV):
+	dmin_file = "{0}/feature/task4/dmin_{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
+	dmin_value = np.loadtxt(dmin_file).ravel()
+	return dmin_value
 
 def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	# ADT5k1VPt-density_CCM-Nafion____CCMcenter.pdf
@@ -23,7 +29,7 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 	
 	consider_Ft = "Pt-O"
 	prefix_input = fix_val + consider_Ft
-	diff_PtO = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
+	diff_PtO = "{0}/feature/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
 					final_state, init_state)
 	diff_PtO_val, is_diff_PtO_pos = pos_neg_lbl_cvt(inputfile=diff_PtO)
@@ -31,7 +37,7 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 
 	consider_Ft = "Pt-valence"
 	prefix_input = fix_val + consider_Ft
-	diff_PtVal = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
+	diff_PtVal = "{0}/feature/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
 					final_state, init_state)
 	diff_PtVal_val, is_diff_PtVal_pos = pos_neg_lbl_cvt(inputfile=diff_PtVal)
@@ -40,7 +46,7 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 
 	consider_Ft = "Pt-Pt"
 	prefix_input = fix_val + consider_Ft
-	diff_PtPt = "{0}/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
+	diff_PtPt = "{0}/feature/task1/{1}/{2}_{3}___{4}.txt".format(input_dir, 
 					task, prefix_input, 
 					final_state, init_state)
 
@@ -71,8 +77,11 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 		task, fix_val, final_state,  init_state) 
 
 	save_at = prefix + ".pdf"
+
+	redox_file_save_at = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(input_dir,
+		task, fix_val, final_state,  init_state)
 	plot_density(values=redox_sum, save_at=save_at,  # diff_PtDens_lbl
-		cmap_name=cmap_name, vmin=vmin, vmax=vmax)
+		cmap_name=cmap_name, vmin=vmin, vmax=vmax, is_save2input=redox_file_save_at)
 
 	# # save to txt
 	save_txt = prefix.replace("result", "input") + ".txt"
@@ -86,49 +95,6 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 			cmap_name=cmap_name, vmin=vmin, vmax=vmax)
 
 
-
-def redox_state_lbl(is_diff_PtO_pos, is_diff_PtVal_pos, is_diff_PtPt_pos):
-	redox_state_8 = np.where(
-		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
-		8, 0)
-
-	redox_state_7 = np.where(
-		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
-		7, 0)
-
-	redox_state_6 = np.where(
-		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
-		6, 0)
-
-	redox_state_5 = np.where(
-		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
-		5, 0)
-
-	redox_state_4 = np.where(
-		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
-		4, 0)
-
-	redox_state_3 = np.where(
-		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
-		3, 0)
-
-	redox_state_2 = np.where(
-		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
-		2, 0)
-
-	redox_state_1 = np.where(
-		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
-		1, 0)
-	redox_states = [redox_state_1, redox_state_2, redox_state_3, redox_state_4,
-				redox_state_5, redox_state_6, redox_state_7, redox_state_8]
-
-	return redox_states
-
-
-
-
-
-
 def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
 	final_state, init_state = diff_state # # here is diff voltage
 
@@ -140,27 +106,48 @@ def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
 	if task == "diff_t":
 		fix_val = "{0}{1}".format(fixP, fixV)
 
-	# dminCCM-NafionADT15k04V_morphology.txt
-	# dminCCM-NafionFresh04V_morphology.txt
+	# morph_file = input_dir+"/feature/task3/bulk_label_"+fixP+fixT+fixV+"_morphology.txt"
+	# morph_val = np.loadtxt(morph_file, dtype=str).ravel()
+	# bkg_idx = np.where(morph_val=="bkg")[0]
 
 	# # get dmin
-	dmin_file = "{0}/task4/dmin{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
-	dmin_value = np.loadtxt(dmin_file)
+	dmin_value = get_dmin(fixP, fixT, fixV)
+	dmin_value_copy = copy.copy(dmin_value)
+	bkg_idx = np.where(dmin_value==-50)[0]
+
+	# dmin_value = np.loadtxt(dmin_file)
 
 	# # get redox value
-	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(myinput_dir,
+	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(input_dir,
 		task, fix_val, final_state, init_state)
 	redox_label = np.loadtxt(redox_file)
 
+	# joint_plot(x=dmin_value.ravel(), y=redox_label.ravel(), 
+	# 	xlabel="dmin_{0}{1}{2}".format(fixP, fixT, fixV), ylabel="redox_state", 
+	# 	xlim=[-2, 40], ylim=None,
+	# 	title=save_at.replace(result_dir, ""),
+	# 	save_at=save_at)
+
+	xlabel = "dmin"
+	ylabel = "redox"
+
+	# xlabel = "redox"
+	# ylabel = "dmin"
+	xlim=[-2, 50]
+	ylim=None
 
 	save_at = "{0}/dmin_redox/{1}/{2}_{3}___{4}_redox.pdf".format(result_dir,
 		task, fix_val, final_state,  init_state) 
+	df_redox_dmin = remove_nan(ignore_first=bkg_idx,
+			matrix1=dmin_value_copy,matrix2=redox_label,lbl1=xlabel,lbl2=ylabel)
 
-	joint_plot(x=dmin_value.ravel(), y=redox_label.ravel(), 
-		xlabel="dmin_{0}{1}{2}".format(fixP, fixT, fixV), ylabel="redox_state", 
-		xlim=[-2, 40], ylim=None,
-		title=save_at.replace(result_dir, ""),
-		save_at=save_at)
+	plot_joinmap(df_redox_dmin, selected_inst=None, xlbl=xlabel, ylbl=ylabel, 
+					xlbl_2fig="Distance to surface", ylbl_2fig="Redox state", color="blue",
+					save_at=save_at, 
+					is_gmm_xhist=False, is_gmm_yhist=False, 
+					means=None, weight=None, cov_matrix=None, 
+					n_components=None, xlim=xlim, ylim=ylim,
+					main_ax_type="candle")
 
 
 def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
@@ -216,40 +203,8 @@ def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 	return df, failed_feature
 
 
-def pos_neg_lbl_cvt(inputfile, is_get_zero=False):
-	try:
-		data = np.loadtxt(inputfile)
-		
-	except Exception as e:
-		revise_file = inputfile.replace("___", "____")
-		data = np.loadtxt(revise_file)
-		if not os.path.isfile(revise_file):
-			print ("TOTALLY WRONG DIR HERE!", inputfile)
-		pass
-
-	# # get label under conditions
-	if is_get_zero:
-		# lbl_zero = np.where(data==0, 0, False)
-		lbl_pos = np.where(data>0, 1, 0)
-		lbl_neg = np.where(data<0, -1, 0)
-		lbl = lbl_neg + lbl_pos
-		
-	else:
-		lbl = np.where(data>=0, True, False)
-
-	# save_at = "{0}/tmp.pdf".format(result_dir) # for test
-	# plot_density(values=diff_PtDens_val, save_at=save_at,  # diff_PtDens_lbl
-	# 	cmap_name="bwr", vmin=None, vmax=None)
-
-	return data, lbl
-
-
-
 if __name__ == "__main__":
-	maindir = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion"
-	input_dir = "{}/fromQuan/v4_0526/feature".format(maindir)
-	result_dir = "{}/result".format(maindir)
-	myinput_dir = "{}/input".format(maindir)
+	result_dir = "{}/result/new_request_3".format(maindir)
 
 	# # in considering diff_t
 	tasks = ["diff_p", "diff_t", "diff_v"]
@@ -284,7 +239,8 @@ if __name__ == "__main__":
 			fixT, fixP, diff_V = comb
 			print (comb)
 			# redox_diff_v(fixT=fixT, fixP=fixP, diff_state=diff_V, task=task)
-			redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_V, task=task)
+			redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
+				diff_state=diff_V, task=task)
 			# break
 
 	if is_redox_lbl:
@@ -303,15 +259,18 @@ if __name__ == "__main__":
 			for comb in combs:
 				if task == "diff_p":
 					fixT, diff_P, fixV = comb
-					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_P, task=task)
+					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
+						diff_state=diff_P, task=task)
 
 				if task == "diff_v":
 					fixT, fixP, diff_V = comb
-					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_V, task=task)
+					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
+						diff_state=diff_V, task=task)
 		
 				if task == "diff_t":
 					diff_T, fixP, fixV = comb
-					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_T, task=task)
+					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
+						diff_state=diff_T, task=task)
 
 
 	if is_redox2dmin:
@@ -390,7 +349,7 @@ if __name__ == "__main__":
 
 			# 	break
 			# break
-	print (all_failed_feature)
+	# print (all_failed_feature)
 
 
 

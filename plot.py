@@ -81,7 +81,7 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
-def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=None, is_save2input=False):
+def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=None, is_save2input=None):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
 	fig = plt.figure(figsize=(10, 10), dpi=300)
@@ -121,10 +121,11 @@ def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=
 	print ("Save file at:", save_at)
 
 	# # save to input
-	if is_save2input:
-		save_txt = save_at.replace("result", "input").replace(".pdf", ".txt")
-		makedirs(save_txt)
-		np.savetxt(save_txt, values)
+	if is_save2input is not None:
+		# save_txt = save_at.replace("result", "input").replace(".pdf", ".txt")
+		makedirs(is_save2input)
+		print("Redox save at:", is_save2input)
+		np.savetxt(is_save2input, values)
 
 	release_mem(fig)
 
@@ -328,7 +329,7 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at, is_show=False):
 
 	ax = sns.jointplot(this_df[xlabel], this_df[ylabel],
 					kind="kde",  shade=True, # hex
-					xlim=xlim, ylim=ylim,
+					# xlim=xlim, ylim=ylim,
 					color='orange',).set_axis_labels(xlabel, ylabel)
 
 	# ax = ax.plot_joint(plt.scatter,
@@ -345,7 +346,7 @@ def joint_plot(x, y, xlabel, ylabel, xlim, ylim, title, save_at, is_show=False):
 	# plt.yticks(np.arange(0, ylim[1], 10)) # fontsize=12
 	plt.subplots_adjust(top=1.1)
 	ax.fig.suptitle(title) 
-	plt.yticks(np.arange(0, ylim[1], 1)) # # Ptdens: 10, valence: 0.5, Pt-Pt: 2
+	plt.yticks(np.arange(0, ylim[1], 10)) # # Ptdens: 10, valence: 0.5, Pt-Pt: 2
 
 	# ax.setxlim(xlim)
 	# # ax.setylim(ylim)
@@ -370,7 +371,7 @@ def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	df[ylabel] = y
 	
 	X = df[[xlabel,ylabel]].values
-	gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
+	gmm = mixture.GaussianMixture(n_components=3, covariance_type='full').fit(X)
 	y_pred = gmm.predict(X)
 	
 	# colors = [convert[k] for k in stable_lbl]
@@ -408,6 +409,7 @@ def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	plt.tight_layout(pad=1.1)
 	makedirs(save_at)
 	plt.savefig(save_at)
+	print("Save at:", save_at)
 	release_mem(fig)
 
 

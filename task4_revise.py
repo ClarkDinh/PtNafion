@@ -62,17 +62,17 @@ def dmin_v3(path_,filename,feature_dir,image_dir):
     
     # all_array_of_distance = np.array(all_array_of_distance)
     # matrix_distance = np.min(all_array_of_distance,axis=-1)
-    dmin_matrix = np.zeros(matrix.shape)
+    dmin_matrix = np.full(matrix.shape, -50.0)
     for idx, i in enumerate(bulk_poses):
         dmin_matrix[i[0],i[1]] = result_min_dists[idx]
     print(dmin_matrix)
 
-    np.savetxt(feature_dir +get_basename(filename).replace("num_bulk_label|", "dmin_"), dmin_matrix,delimiter="  ")
+    np.savetxt(feature_dir+get_basename(filename).replace("num_bulk_label", "dmin_"), dmin_matrix,delimiter="  ")
     # vì nan sẽ làm tính min max trong hàm plot bị lỗi, nên set nan thành 1 giá trị nào đó khác 0(surf) 
     # và âm thì nhìn thấy màu rõ hơn vì giá trị distance toàn là dương. 
     # test[np.isnan(test)] = -30 
-    plot_density(values=dmin_matrix, save_at=image_dir, title=get_file_name(filename), 
-        cmap_name="jet", vmin=0.0, vmax=np.max(dmin_matrix))
+    plot_density(values=dmin_matrix, save_at=image_dir, title=get_basename(filename).replace("num_bulk_label", "dmin_"), 
+        cmap_name="jet", vmin=-50, vmax=50)
 
 
 def main():
@@ -95,7 +95,7 @@ def main():
         dmin_v3(path_=path + "feature/task3/",
             filename=filename,
             feature_dir=path + "feature/task4/", 
-            image_dir=path+"image/task4/"+filename.replace(".txt",".pdf").replace("num_bulk_label|", "dmin_"))
+            image_dir=path+"image/task4/"+filename.replace(".txt",".pdf").replace("num_bulk_label", "dmin_"))
 
 if __name__ == "__main__":main()
 
