@@ -1,6 +1,6 @@
 import numpy as np
 
-def roll(x, k_step):
+def roll(x, k_step): 
 	# work well with k_step = 1
 
 	x_copy = x

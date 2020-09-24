@@ -7,7 +7,7 @@ size_y = 512
 
 Positions = ["CCM-Nafion", "CCMcenter"]
 Times = ["Fresh", "ADT15k"] # ADT5k
-Voltages = ["04V", "1V"]
+Voltages = ["04V", "1V"] # 
 
 Features = ["morphology", "Pt-density", "Pt-valence", "Pt-O", "Pt-Pt"]
 
@@ -17,8 +17,8 @@ dP = [["CCM-Nafion", "CCMcenter"]]
 dT_tunes = [["ADT15k", "Fresh"]]
 dT = [["ADT15k", "Fresh"]]
 
-dV = [["04V", "1V"]]
-dV_tunes = [["1V"]]
+dV = [["1V", "04V"]]
+dV_tunes = [["1V", "04V"]]
 
 
 
@@ -32,9 +32,11 @@ input_dir = "{}/input/2020-06-17-NewRequest/txt".format(maindir)
 
 min_Ptdens, max_Ptdens = 0.0, 0.002# 0.005
 min_Ptval, max_Ptval = 0.0, 1.25 #
-min_PtPt, max_PtPt = 0.0, 12 # 
+min_PtPt, max_PtPt = 0.0, 12.0 # 
 min_morph, max_morph = 0.0, 0.002 # 0.025
 min_PtO, max_PtO = 0.0, 0.3 # 1.5
+
+index2remove = range(0, 30) # # for crop image of redox, dmin to redox
 
 norm_value_range = { 
 	"Pt-density": (min_Ptdens, max_Ptdens), # (0.0, 0.0041548326), 
@@ -54,6 +56,11 @@ def get_org_dir(p, feature, t, v, ftype="txt"):
 		p, feature, t, v, ftype)
 	return orgdir
 
+def get_dmin(fixP, fixT, fixV):
+    dmin_file = "{0}/feature/task4/dmin_{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
+    dmin_value = np.loadtxt(dmin_file)
+    dmin_value = np.delete(dmin_value, index2remove, 1)  # delete second column of C
+    return dmin_value.ravel()
 
 def remove_nan(ignore_first,matrix1,matrix2,lbl1,lbl2):
     if ignore_first is not None:
@@ -63,10 +70,21 @@ def remove_nan(ignore_first,matrix1,matrix2,lbl1,lbl2):
 
     nan_of_matrix1 = np.argwhere(np.isnan(matrix1))
     nan_of_matrix2 = np.argwhere(np.isnan(matrix2))
-    print(nan_of_matrix1, nan_of_matrix2)
+    print("before:", len(nan_of_matrix2))
+
+    # only for task 1, 2
+    more = np.argwhere(matrix2>100)
+    nan_of_matrix2 = np.concatenate((more, nan_of_matrix2))
+
+
+    more = np.argwhere(matrix2<-100)
+    nan_of_matrix2 = np.concatenate((more, nan_of_matrix2))
+
+    print("after:", len(nan_of_matrix2))
+    # print("Check nan here:", nan_of_matrix1, nan_of_matrix2, len(nan_of_matrix2), len(matrix2))
     matrix1 = np.delete(matrix1,np.concatenate((nan_of_matrix1,nan_of_matrix2),axis=0))
     matrix2 = np.delete(matrix2,np.concatenate((nan_of_matrix1,nan_of_matrix2),axis=0))
-
+    # print("value matrix2:", matrix2)
     df = pd.DataFrame(columns=[lbl1,lbl2])
     df[lbl1] = matrix1
     df[lbl2] = matrix2
@@ -101,35 +119,35 @@ def pos_neg_lbl_cvt(inputfile, is_get_zero=False):
 def redox_state_lbl(is_diff_PtO_pos, is_diff_PtVal_pos, is_diff_PtPt_pos):
 	redox_state_8 = np.where(
 		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
-		8, 0)
+		8.0, 0.0)
 
 	redox_state_7 = np.where(
 		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
-		7, 0)
+		7.0, 0.0)
 
 	redox_state_6 = np.where(
 		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
-		6, 0)
+		6.0, 0.0)
 
 	redox_state_5 = np.where(
 		((is_diff_PtO_pos == True) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
-		5, 0)
+		5.0, 0.0)
 
 	redox_state_4 = np.where(
 		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == True)),  
-		4, 0)
+		4.0, 0.0)
 
 	redox_state_3 = np.where(
 		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == True) & (is_diff_PtPt_pos == False)),  
-		3, 0)
+		3.0, 0.0)
 
 	redox_state_2 = np.where(
 		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == True)),  
-		2, 0)
+		2.0, 0.0)
 
 	redox_state_1 = np.where(
 		((is_diff_PtO_pos == False) & (is_diff_PtVal_pos == False) & (is_diff_PtPt_pos == False)),  
-		1, 0)
+		1.0, 0.0)
 	redox_states = [redox_state_1, redox_state_2, redox_state_3, redox_state_4,
 				redox_state_5, redox_state_6, redox_state_7, redox_state_8]
 

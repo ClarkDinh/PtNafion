@@ -1,9 +1,9 @@
-import sys
+import sys, copy
 # path = "/home/s1810235/part_time/PtNafion/"
 path = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion/input/2020-06-17-NewRequest/txt/"
 sys.path.insert(0, path)
 from plot import *
-from opt_GMM_2 import *
+# from opt_GMM_2 import *
 import numpy as np
 import os, time
 from Nafion_constant import *
@@ -21,15 +21,22 @@ def diff_t(p,v,t1,t2,task):
                 Pt1 = np.array(np.loadtxt(sub_path+ str(feature)+"/" + t1 + v + "_" + str(feature)+".txt"))
                 Pt2 = np.array(np.loadtxt(sub_path+ str(feature)+"/" + t2 + v + "_" + str(feature)+".txt"))
                 Pt1_t2 = np.subtract(Pt1,Pt2)
-                print(Pt1_t2)
-                os.makedirs(path + "image/task1/" + "diff_t",exist_ok=True)
+                # print(Pt1_t2)
+                os.makedirs(path + "0916_image/task1/" + "diff_t",exist_ok=True)
 
                 vmin, vmax = get_vmin_vmax_diff(feature=feature)
-                # vmin, vmax = None, None
-                plot_density(values=Pt1_t2,
-                    save_at=path+"image/task1/"+"diff_t/"+"{Params}_{feature1}____{feature2}.pdf".format(Params=str(p+v+feature),feature1=str(t1),feature2 = str(t2)),
-                    title="{Params}_{feature1}____{feature2}".format(Params=str(p+v+feature),feature1=str(t1),feature2=str(t2),
-                    cmap_name="bwr", vmin=vmin, vmax=vmax))
+                print (feature, vmin, vmax)
+                # vmin, vmax = None, None'
+                print ("size before: ", Pt1_t2.shape)
+                Pt1_t2_copy =  copy.copy(Pt1_t2)
+                Pt1_t2_copy = np.delete(Pt1_t2_copy, index2remove, 1)  # delete second column of C
+                print ("size after: ", Pt1_t2_copy.shape)
+                
+                plot_density(values=Pt1_t2_copy,
+                    save_at=path+"0916_image/task1/"+"diff_t/"+"{Params}_{feature1}____{feature2}.pdf".format(Params=str(p+v+feature),feature1=str(t1),feature2 = str(t2)),
+                    cmap_name="bwr",
+                    title="{Params}_{feature1}____{feature2}".format(Params=str(p+v+feature),feature1=str(t1),feature2=str(t2)),
+                    vmin=vmin, vmax=vmax)
                 localtime = time.localtime()
                 result = time.strftime("%I:%M:%S %p", localtime)
                 print(result, end="", flush=True)
@@ -98,44 +105,46 @@ def diff_v(t,p,v1,v2,task):
     for feature in os.listdir(sub_path):
         if not feature.endswith(".DS_Store"):
             if(task=="task1"):
-                Pv04 = np.array(np.loadtxt(sub_path + str(feature) + "/" + t + v1 + "_" + str(feature)+ ".txt"))
-                Pv10 = np.array(np.loadtxt(sub_path + str(feature) + "/" + t + v2 + "_" + str(feature)+ ".txt"))
-                Pv04_v10 = np.subtract(Pv04,Pv10)
+                Pv1 = np.array(np.loadtxt(sub_path + str(feature) + "/" + t + v1 + "_" + str(feature)+ ".txt"))
+                Pv2 = np.array(np.loadtxt(sub_path + str(feature) + "/" + t + v2 + "_" + str(feature)+ ".txt"))
+                Pv1_2 = np.subtract(Pv1,Pv2)
                 os.makedirs(path +"image/task1/" + "diff_v",exist_ok=True)
                 vmin, vmax = get_vmin_vmax_diff(feature=feature)
+                print (feature, vmin, vmax)
+                # vmin, vmax = None, None'
+                print ("size before: ", Pv1_2.shape)
+                Pv1_2_copy =  copy.copy(Pv1_2)
+                Pv1_2_copy = np.delete(Pv1_2_copy, index2remove, 1)  # delete second column of C
+                print ("size after: ", Pv1_2_copy.shape)
 
-                plot_density(values=Pv04_v10,
+
+                plot_density(values=Pv1_2_copy,
                     save_at=path + "image/task1/" + "diff_v/"+"{Param}_{feature1}___{feature2}.pdf".format(Param = str(t + p + feature),feature1 = str(v1),feature2 = str(v2)),
                     title="{Param}_{feature1}____{feature2}".format(Param = str(t + p + feature),feature1 = str(v1),feature2 = str(v2)),
                     cmap_name="bwr", vmin=vmin, vmax=vmax)
                 os.makedirs(path +"feature/task1/" + "diff_v",exist_ok=True)
                 np.savetxt(path + "feature/task1/" + "diff_v/"+"{Param}_{feature1}___{feature2}.txt".format(Param = str(t + p + feature),feature1 = str(v1),feature2 = str(v2)),
-                    Pv04_v10,delimiter="  ")
+                    Pv1_2,delimiter="  ")
                 
-            else:
-                ######task5_section3######
-                Pv04 = np.ravel(np.loadtxt(sub_path + str(feature) + "/" + t + v1 + "_" + str(feature)+ ".txt"))
-                Pv10 = np.ravel(np.loadtxt(sub_path + str(feature) + "/" + t + v2 + "_" + str(feature)+ ".txt"))
-                min_x = np.min(Pv04) ######x tmp[0],y=temp[1]
-                max_x = np.max(Pv04)
-                min_y = np.min(Pv10) ######x tmp[0],y=temp[1]
-                max_y = np.max(Pv10)
-                os.makedirs(path + "image/task5/joint_diff/",exist_ok=True)
-                start = time.time()
-                print("processing.........")
-                joint_plot_fill(Pv04, Pv10, "{}_{}_{}_{}".format(feature,p,t,v1), "{}_{}_{}_{}".format(feature,p,t,v2), path + "image/task5/joint_diff/{}___{}.pdf".format("{}_{}_{}_{}".format(feature,p,t,v1), "{}_{}_{}_{}".format(feature,p,t,v2)) , min_x ,max_x,min_y,max_y )
-                print("finish............" + "Time take:{}".format(time.time()-start)+"to run"+"file num:{}".format(count))
-                ######task5######
-            
-
-    
 
 def main():
     # # #Different of parameter T
-    diff_t("CCM-Nafion","1V","ADT15k","Fresh","task1")
-    diff_t("CCM-Nafion","04V","ADT15k","Fresh","task1")
-    diff_t("CCMcenter","1V","ADT15k","Fresh","task1")
-    diff_t("CCMcenter","04V","ADT15k","Fresh","task1")
+    # diff_t("CCM-Nafion","1V","ADT15k","Fresh","task1")
+    # diff_t("CCM-Nafion","04V","ADT15k","Fresh","task1")
+    # diff_t("CCMcenter","1V","ADT15k","Fresh","task1")
+    # diff_t("CCMcenter","04V","ADT15k","Fresh","task1")
+
+    # #Different of paremeter V
+    diff_v("Fresh","CCMcenter","1V","04V","task1")
+    diff_v("Fresh","CCM-Nafion","1V","04V","task1")
+    diff_v("ADT15k","CCMcenter","1V","04V","task1")
+    diff_v("ADT15k","CCM-Nafion","1V","04V","task1")
+
+    # # Different of parameter p
+    # diff_p("ADT15k","1V","CCM-Nafion","CCMcenter","task1")
+    # diff_p("ADT15k","04V","CCM-Nafion","CCMcenter","task1")
+    # diff_p("Fresh","1V","CCM-Nafion","CCMcenter","task1")
+    # diff_p("Fresh","04V","CCM-Nafion","CCMcenter","task1")
 
     # # ignore in new_request
     # diff_t("CCM-Nafion","1V","Fresh","ADT5k","task1")
@@ -146,23 +155,8 @@ def main():
     # diff_t("CCMcenter","04V","Fresh","ADT5k","task1")
     # diff_t("CCMcenter","1V","ADT5k","ADT15k","task1")
     # diff_t("CCMcenter","04V","ADT5k","ADT15k","task1")
-
-    #Different of parameter p
-    diff_p("ADT15k","1V","CCM-Nafion","CCMcenter","task1")
-    diff_p("ADT15k","04V","CCM-Nafion","CCMcenter","task1")
-    diff_p("Fresh","1V","CCM-Nafion","CCMcenter","task1")
-    diff_p("Fresh","04V","CCM-Nafion","CCMcenter","task1")
-
-    # # ignore in new_request
     # # diff_p("ADT5k","1V","CCM-Nafion","CCMcenter","task1")
     # # diff_p("ADT5k","04V","CCM-Nafion","CCMcenter","task1")
-
-    # #Different of paremeter V
-    diff_v("Fresh","CCMcenter","04V","1V","task1")
-    diff_v("Fresh","CCM-Nafion","04V","1V","task1")
-    diff_v("ADT15k","CCMcenter","04V","1V","task1")
-    diff_v("ADT15k","CCM-Nafion","04V","1V","task1")
-
     # # diff_v("ADT5k","CCMcenter","04V","1V","task1")
     # # diff_v("ADT5k","CCM-Nafion","04V","1V","task1")
 

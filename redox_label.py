@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import time, gc, os, itertools
+import time, gc, os, itertools 
 import pandas as pd
 
 from plot import plot_density, plot_hist, makedirs, joint_plot_1
@@ -9,16 +9,10 @@ from pylab import *
 from fine_tunning import plot_joinmap
 import copy
 # from fine_tunning import get_dmin
-
-
-def get_dmin(fixP, fixT, fixV):
-	dmin_file = "{0}/feature/task4/dmin_{1}{2}{3}_morphology.txt".format(input_dir, fixP, fixT, fixV)
-	dmin_value = np.loadtxt(dmin_file).ravel()
-	return dmin_value
+path = "/Users/nguyennguyenduong/Dropbox/Document/2020/Nagoya_Nafion/input/2020-06-17-NewRequest/txt/"
 
 def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
-	# ADT5k1VPt-density_CCM-Nafion____CCMcenter.pdf
-	final_state, init_state = diff_state # # here is diff voltage
+	final_state, init_state = diff_state 
 
 	if task == "diff_p":
 		fix_val = "{0}{1}".format(fixT, fixV)
@@ -64,14 +58,27 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 
 
 	redox_sum = sum(redox_states, axis=0)
+	# # filter crack area
+	# if task == "diff_t":
+	print (init_state)
+	bulk_label_file = path+"feature/task3/num_bulk_label"+fixP+fixT+fixV+"_morphology.txt"
+	bulk_label_lbl = np.loadtxt(bulk_label_file)
+	# crack_id = np.where(bulk_label_lbl==-1) 
+	redox_sum = np.array(redox_sum)
+	redox_sum[bulk_label_lbl==-1] = np.nan # np.nan
+	print ("Shape before: ", redox_sum.shape)
+	# # delete 10 columns on the left
+
+	redox_sum_copy = copy.copy(redox_sum)
+	redox_sum_copy = np.delete(redox_sum_copy, index2remove, 1)  # delete second column of C
+	print ("Shape after: ", redox_sum_copy.shape)
 
 	# # to plot
-	vmin=1
-	vmax=8 
+	vmin = 1
+	vmax = 8 
 	cmap_name="jet"
 	# cmap_name = cm.get_cmap('PiYG', 8)
 
-	print (redox_sum)
 
 	prefix = "{0}/redox/{1}/{2}_{3}___{4}".format(result_dir,
 		task, fix_val, final_state,  init_state) 
@@ -80,22 +87,25 @@ def redox_lbl(fixT, fixP, fixV, diff_state, task="diff_p"):
 
 	redox_file_save_at = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(input_dir,
 		task, fix_val, final_state,  init_state)
-	plot_density(values=redox_sum, save_at=save_at,  # diff_PtDens_lbl
-		cmap_name=cmap_name, vmin=vmin, vmax=vmax, is_save2input=redox_file_save_at)
+	plot_density(values=redox_sum_copy, save_at=save_at,  # diff_PtDens_lbl
+		title=save_at.replace(result_dir,""),
+		cmap_name=cmap_name, vmin=vmin, vmax=vmax, 
+		is_save2input=redox_file_save_at)
 
 	# # save to txt
 	save_txt = prefix.replace("result", "input") + ".txt"
 	makedirs(save_txt)
 
-	np.savetxt(save_txt, redox_sum)
+	np.savetxt(save_txt, redox_sum_copy) # redox_sum_copy, redox_sum
 
 	for i, rst in enumerate(redox_states):
 		tmp_save_at = "{0}/redox_{1}.pdf".format(prefix, i+1)
-		plot_density(values=rst, save_at=tmp_save_at,  
+		plot_density(values=rst, save_at=tmp_save_at,
+		title=tmp_save_at.replace(result_dir,""),
 			cmap_name=cmap_name, vmin=vmin, vmax=vmax)
 
 
-def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
+def join_redox_dmin(fixT, fixP, fixV, diff_state, dmin_measure, task="diff_p"):
 	final_state, init_state = diff_state # # here is diff voltage
 
 
@@ -121,7 +131,9 @@ def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
 	redox_file = "{0}/redox/{1}/{2}_{3}___{4}.txt".format(input_dir,
 		task, fix_val, final_state, init_state)
 	redox_label = np.loadtxt(redox_file)
-
+	# redox_label = np.delete(redox_label, index2remove, 1)  
+	# redox_label = redox_label.ravel()
+	print ("compare shape", dmin_value.shape, redox_label.shape)
 	# joint_plot(x=dmin_value.ravel(), y=redox_label.ravel(), 
 	# 	xlabel="dmin_{0}{1}{2}".format(fixP, fixT, fixV), ylabel="redox_state", 
 	# 	xlim=[-2, 40], ylim=None,
@@ -136,8 +148,8 @@ def join_redox_dmin(fixT, fixP, fixV, diff_state, task="diff_p"):
 	xlim=[-2, 50]
 	ylim=None
 
-	save_at = "{0}/dmin_redox/{1}/{2}_{3}___{4}_redox.pdf".format(result_dir,
-		task, fix_val, final_state,  init_state) 
+	save_at = "{0}/dmin_redox/{1}/dmin_at{5}/{2}_{3}___{4}_redox.pdf".format(result_dir,
+		task, fix_val, final_state, init_state, dmin_measure) # final_state or init_state
 	df_redox_dmin = remove_nan(ignore_first=bkg_idx,
 			matrix1=dmin_value_copy,matrix2=redox_label,lbl1=xlabel,lbl2=ylabel)
 
@@ -204,11 +216,11 @@ def save_diff_2csv(df, fixT, fixP, fixV, diff_state, save_at, task="diff_p"):
 
 
 if __name__ == "__main__":
-	result_dir = "{}/result/new_request_3".format(maindir)
+	result_dir = "{}/result/0916_response".format(maindir)
 
 	# # in considering diff_t
-	tasks = ["diff_p", "diff_t", "diff_v"]
-	is_redox_lbl = False
+	tasks = ["diff_v"] # "diff_p", "diff_t", "diff_v"
+	is_redox_lbl = True
 	is_redox2dmin = True
 	is_save2csv = False
 
@@ -259,16 +271,19 @@ if __name__ == "__main__":
 			for comb in combs:
 				if task == "diff_p":
 					fixT, diff_P, fixV = comb
+					fixP = diff_P[1]
 					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
 						diff_state=diff_P, task=task)
 
 				if task == "diff_v":
 					fixT, fixP, diff_V = comb
+					fixV = diff_V[1]
 					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
 						diff_state=diff_V, task=task)
 		
 				if task == "diff_t":
 					diff_T, fixP, fixV = comb
+					fixT = diff_T[1]
 					redox_lbl(fixT=fixT, fixP=fixP, fixV=fixV, 
 						diff_state=diff_T, task=task)
 
@@ -287,19 +302,19 @@ if __name__ == "__main__":
 			for comb in combs:
 				if task == "diff_p":
 					fixT, diff_P, fixV = comb
-					fixP = diff_P[0]
-					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_P, task=task)
+					fixP = diff_P[1]
+					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, dmin_measure=fixP, diff_state=diff_P, task=task)
 
 				
 				if task == "diff_v":
 					fixT, fixP, diff_V = comb
-					fixV = diff_V[0]
-					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_V, task=task)
+					fixV = diff_V[1]
+					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, dmin_measure=fixV, diff_state=diff_V, task=task)
 		
 				if task == "diff_t":
 					diff_T, fixP, fixV = comb
-					fixT = diff_T[0]
-					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, diff_state=diff_T, task=task)
+					fixT = diff_T[1]
+					join_redox_dmin(fixT=fixT, fixP=fixP, fixV=fixV, dmin_measure=fixT, diff_state=diff_T, task=task)
 
 			# 	break
 			# break

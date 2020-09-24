@@ -19,6 +19,7 @@ def feature(input_direction,output_direction_feature,output_direction_image,diff
             print(matrix)
 
             np.savetxt(output_direction_feature + diff + "/" + str(file_init),matrix,delimiter="  ")
+            
             plot_density(matrix,output_direction_image + diff + "/" + str(file_init.replace(".txt","")),str(file_init.replace(".txt","")),"bwr", vmin=None, vmax=None)
             
 

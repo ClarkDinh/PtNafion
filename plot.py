@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time, gc, os
 import pandas as pd
 
-import sys
+import sys 
 sys.path.append("..")
 try:
 	import seaborn as sns
@@ -81,15 +81,15 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
-def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=None, is_save2input=None):
+def plot_density(values, save_at,  cmap_name, title, vmin, vmax, is_save2input=None):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
 	fig = plt.figure(figsize=(10, 10), dpi=300)
 
-	if vmin is None and vmax is None:
-		max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
-		vmin = -max_abs
-		vmax = max_abs
+	# if vmin is None and vmax is None:
+	# 	max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
+	# 	vmin = -max_abs
+	# 	vmax = max_abs
 
 
 
@@ -102,6 +102,7 @@ def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=
 	cmap.set_bad('white')
 	# img = cmap(values)
 	# print (img)
+	print ("here", vmin, vmax)
 	plt.imshow(values, cmap=cmap, interpolation='none', vmin=vmin, vmax=vmax)
 
 	plt.colorbar()
