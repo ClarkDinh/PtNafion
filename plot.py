@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import time, gc, os
 import pandas as pd
 
-import sys
+import sys 
 sys.path.append("..")
 try:
 	import seaborn as sns
@@ -31,9 +31,7 @@ def release_mem(fig):
 	plt.close()
 	gc.collect()
 
-
-
-def ax_setting(ax):
+def ax_setting(ax=None):
 	plt.style.use('default')
 	plt.tick_params(axis='x', which='major', labelsize=13)
 	plt.tick_params(axis='y', which='major', labelsize=13)
@@ -81,18 +79,174 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
-def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=None, is_save2input=None):
+def scatter_plot(x, y, xvline=None, yhline=None, 
+	sigma=None, mode='scatter', lbl=None, name=None, 
+	x_label='x', y_label='y', 
+	save_file=None, interpolate=False, color='blue', 
+	linestyle='-.', marker='o'):
+	fig = plt.figure(figsize=(8, 8))
+
+	if 'scatter' in mode:
+		plt.scatter(x, y, s=100, alpha=0.8, 
+		marker=marker, c=color, edgecolor="white") # brown
+
+	if 'line' in mode:
+		plt.plot(x, y,  marker=marker, linestyle=linestyle, color=color,
+		 alpha=1.0, label=lbl, markersize=10, mfc='none')
+
+	if xvline is not None:
+		plt.axvline(x=xvline, linestyle='-.', color='black')
+	if yhline is not None:
+		plt.axhline(y=yhline, linestyle='-.', color='black')
+
+	if name is not None:
+		for i in range(len(x)):
+			# only for lattice_constant problem, 1_Ag-H, 10_Ag-He
+			# if tmp_check_name(name=name[i]):
+			   # reduce_name = str(name[i]).split('_')[1]
+			   # plt.annotate(reduce_name, xy=(x[i], y[i]), size=5)
+			plt.annotate(name[i], xy=(x[i], y[i]), size=6)
+		
+
+	plt.ylabel(y_label, **axis_font)
+	plt.xlabel(x_label, **axis_font)
+	ax_setting()
+
+
+
+	# plt.grid(linestyle='--', color="gray", alpha=0.8)
+	plt.legend(prop={'size': 16})
+	makedirs(save_file)
+	plt.savefig(save_file)
+	release_mem(fig=fig)
+
+
+
+def scatter_plot_4(x, y, color_array=None, xvlines=None, yhlines=None, 
+	sigma=None, mode='scatter', lbl=None, name=None, 
+	s=100, alphas=0.8, title=None,
+	x_label='x', y_label='y', 
+	save_file=None, interpolate=False, color='blue', 
+	preset_ax=None, linestyle='-.', marker='o'):
+
+
+	fig = plt.figure(figsize=(8, 8), linewidth=1.0)
+	grid = plt.GridSpec(4, 4, hspace=0.3, wspace=0.3)
+	main_ax = fig.add_subplot(grid[1:, :-1])
+	y_hist = fig.add_subplot(grid[1:, -1], xticklabels=[], sharey=main_ax)
+	x_hist = fig.add_subplot(grid[0, :-1], yticklabels=[], sharex=main_ax)
+	
+	sns.set_style(style='white') 
+
+	# main_ax.legend(lbl, 
+	#   loc='lower left', fontsize=18,
+	#   bbox_to_anchor=(1.05, 1.05, ),  borderaxespad=0)
+	plt.title(title)
+
+
+	# elif isinstance(marker, list):
+	main_ax = sns.kdeplot(x, y,
+			 # joint_kws={"colors": "black", "cmap": None, "linewidths": 3.0},
+			 cmap='Oranges',
+			 shade=True, shade_lowest=False,
+			 fontsize=10, ax=main_ax, linewidths=1,
+			 # vertical=True
+			 )
+	if color_array is None:
+	    main_ax.scatter(x, y, s=s, alpha=0.8, marker=marker, c=color, 
+	        edgecolor="black")
+	# for _m, _c, _x, _y, _a in zip(marker, color_array, x, y, alphas):
+	# 	main_ax.scatter(_x, _y, s=s, marker=_m, c=_c, alpha=_a, edgecolor="black")
+
+	
+
+	# for xvline in xvlines:
+	#   main_ax.axvline(x=xvline, linestyle='-.', color='black')
+	# for yhline in yhlines:
+	#   main_ax.axhline(y=yhline, linestyle='-.', color='black')
+
+	main_ax.set_xlabel(x_label, **axis_font)
+	main_ax.set_ylabel(y_label, **axis_font)
+	if name is not None:
+		for i in range(len(x)):
+			# only for lattice_constant problem, 1_Ag-H, 10_Ag-He
+			# if tmp_check_name(name=name[i]):
+			   # reduce_name = str(name[i]).split('_')[1]
+			   # plt.annotate(reduce_name, xy=(x[i], y[i]), size=5)
+			main_ax.annotate(name[i], xy=(x[i], y[i]), size=size_text)
+
+	# x_hist.hist(x, c='orange', linewidth=1)
+	# y_hist.hist(y, c='orange', linewidth=1)
+	# red_idx = np.where((np.array(color)=="red"))[0]
+
+
+	# # x-axis histogram
+	sns.distplot(x, bins=100, ax=x_hist, hist=False,
+		kde_kws={"color": "grey", "lw": 1},
+		# shade=True,
+		# hist_kws={"linewidth": 3, "alpha": 0.3, "color": "orange"},
+		vertical=False, norm_hist=True)
+	l1 = x_hist.lines[0]
+	x1 = l1.get_xydata()[:,0]
+	y1 = l1.get_xydata()[:,1]
+	x_hist.fill_between(x1, y1, color="orange", alpha=0.3)
+
+	# sns.distplot(x[red_idx], bins=100, ax=x_hist, hist=False,
+	# 	kde_kws={"color": "blue", "lw": 1},
+	# 	# shade=True,
+	# 	# hist_kws={"linewidth": 3, "alpha": 0.3, "color": "blue"},
+	# 	vertical=False, norm_hist=True)
+	# l1 = x_hist.lines[0]
+	# x1 = l1.get_xydata()[:,0]
+	# y1 = l1.get_xydata()[:,1]
+	# x_hist.fill_between(x1, y1, color="blue", alpha=0.3)
+
+	# # y-axis histogram
+	sns.distplot(y, bins=100, ax=y_hist, hist=False,
+		kde_kws={"color": "grey", "lw": 1},
+		# shade=True,
+		# hist_kws={"linewidth": 3, "alpha": 0.3, "color": "orange"},
+		vertical=True, norm_hist=True)
+	l1 = y_hist.lines[0]
+	x1 = l1.get_xydata()[:,0]
+	y1 = l1.get_xydata()[:,1]
+	y_hist.fill_between(x1, y1, color="orange", alpha=0.3)
+
+
+	# sns.distplot(y[red_idx], bins=100, ax=y_hist, hist=False,
+	# 	kde_kws={"color": "blue", "lw": 1},
+	# 	# shade=True,
+	# 	# hist_kws={"linewidth": 3, "alpha": 0.3, "color": "blue"},
+	# 	vertical=True, norm_hist=True)
+	# l1 = y_hist.lines[0]
+	# x1 = l1.get_xydata()[:,0]
+	# y1 = l1.get_xydata()[:,1]
+	# y_hist.fill_between(x1, y1, color="blue", alpha=0.3)
+
+
+
+	plt.setp(x_hist.get_xticklabels(), visible=False)
+	plt.setp(y_hist.get_yticklabels(), visible=False)
+	plt.tight_layout(pad=1.1)
+
+	makedirs(save_file)
+	plt.savefig(save_file, transparent=False)
+	print ("Save at: ", save_file)
+	release_mem(fig=fig)
+
+
+
+def plot_density(values, save_at,  cmap_name, 
+	title, vmin, vmax, is_save2input=None,
+	is_lbl=False, set_labels=None):
 	# input: matrix [n_rows, n_cols] of any value
 	# output: figure
 	fig = plt.figure(figsize=(10, 10), dpi=300)
 
-	if vmin is None and vmax is None:
-		max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
-		vmin = -max_abs
-		vmax = max_abs
-
-
-
+	# if vmin is None and vmax is None:
+	# 	max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
+	# 	vmin = -max_abs
+	# 	vmax = max_abs
 
 	# m = np.ma.masked_where(np.isnan(values),values)
 	# plt.pcolor(m)
@@ -102,14 +256,23 @@ def plot_density(values, save_at,  cmap_name="bwr", title=None, vmin=None, vmax=
 	cmap.set_bad('white')
 	# img = cmap(values)
 	# print (img)
-	plt.imshow(values, cmap=cmap, interpolation='none', vmin=vmin, vmax=vmax)
+	print ("here", vmin, vmax)
 
-	plt.colorbar()
-	plt.xlabel('x', **axis_font)
-	plt.ylabel('y', **axis_font)
+	if is_lbl:
+		for lbl in set_labels:
+			first_idx = np.where(values==lbl)
+			if len(first_idx[0]) != 0:
+				yt, xt =  first_idx[0][0], first_idx[1][0]
+				plt.text(xt, yt, lbl)
+	plt.imshow(values, cmap=cmap, 
+		interpolation='none', vmin=vmin, vmax=vmax)
+
+	# plt.colorbar()
+	# plt.xlabel('x', **axis_font)
+	# plt.ylabel('y', **axis_font)
 
 	# title = save_at[save_at.find('result/') + len('result/'): ]
-	plt.title(title, **title_font)
+	# plt.title(title, **title_font)
 	ax = plt.gca()
 	ax.axes.xaxis.set_visible(False)
 	ax.axes.yaxis.set_visible(False)
@@ -170,13 +333,9 @@ def plot_hist(x, save_at=None, label=None, nbins=50):
 	# return y_plot
 
 
-
 def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,  is_gmm=True, n_components_gmm=3, save_gmm_file=None,
 				means_init=None, weighs_init=None):
 	from opt_GMM import opt_GMM
-
-	# save all predicted val to csv 
-
 	# X_plot = X_plot[X_plot < 600]
 	nbins = 200
 	x_lb = np.min(X_plot)
@@ -246,10 +405,6 @@ def plt_hist_gmm(X_plot, save_fig_file, label, is_kde=False,  is_gmm=True, n_com
 	plt.legend(prop={'size': 16})
 	plt.savefig(save_fig_file)
 	release_mem(fig)
-
-
-
-
 
 
 def joint_plot_1(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
@@ -371,11 +526,11 @@ def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	df[ylabel] = y
 	
 	X = df[[xlabel,ylabel]].values
-	gmm = mixture.GaussianMixture(n_components=3, covariance_type='full').fit(X)
+	gmm = mixture.GaussianMixture(n_components=5, covariance_type='full').fit(X)
 	y_pred = gmm.predict(X)
 	
 	# colors = [convert[k] for k in stable_lbl]
-	fig, ax=plt.subplots(figsize=(12, 12))
+	fig, ax=plt.subplots(figsize=(8, 8))
 
 	# Draw contour
 	x_c = np.linspace(xlim[0], xlim[1], 100)
@@ -396,7 +551,7 @@ def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	# plt.gca().yaxis.set_major_formatter(StrMethodFormatter('{x:,.1f}'))
 #     plt.yticks(np.arange(np.min(y), np.max(y) + 0.5, 1.0)) #d6-s2
 	plt.scatter(x, y, color="grey",# label=state, 
-                alpha=0.6, s=2, marker="o",
+                alpha=0.6, s=100, marker="o",
                 linewidths=0.1, edgecolors=None)
 	plt.xlabel(r'%s' %xlabel, **axis_font)
 	plt.ylabel(r'%s' %ylabel, **axis_font)
@@ -411,9 +566,6 @@ def joint_plot_2(x, y, xlabel, ylabel, xlim, ylim, title, save_at):
 	plt.savefig(save_at)
 	print("Save at:", save_at)
 	release_mem(fig)
-
-
-
 
 
 def ax_histfill(x, label, ax, lbx, ubx, orientation="horizontal"):
@@ -433,7 +585,6 @@ def ax_histfill(x, label, ax, lbx, ubx, orientation="horizontal"):
 			patches[i].set_color('orange')
 
 	return ax
-
 
 def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	fig = plt.figure(figsize=(8, 8))
@@ -464,19 +615,6 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	g.ax_marg_x.set_axis_off()
 	g.ax_marg_y.set_axis_off()
 
-
-	# x_hist = g.ax_marg_x
-	# y_hist = g.ax_marg_y
-	# x_hist = ax_histfill(x=x, label=xlabel, ax=x_hist, lbx=lbx, ubx=ubx, orientation='vertical')
-	# y_hist = ax_histfill(x=y, label=ylabel, ax=y_hist, lbx=lby, ubx=uby, orientation='horizontal')
-	# main_ax.tick_params(axis='both', labelsize=10)
-	# main_ax.set_xlabel(xlabel, **axis_font)
-	# main_ax.set_ylabel(ylabel, **axis_font)
-
-	# plt.setp(x_hist.get_xticklabels(), visible=False)
-	# plt.setp(y_hist.get_yticklabels(), visible=False)
-	
-
 	# sns.jointplot(x, y,kind="kde", shade=True)
 
 	plt.tight_layout(pad=1.1)
@@ -484,114 +622,6 @@ def joint_plot_fill(x, y, xlabel, ylabel, save_at, lbx, ubx, lby, uby):
 	makedirs(save_at)
 	plt.savefig(save_at)
 	release_mem(fig=fig)
-
-class corr_analysis():
-	def __init__(self, data_file, threshold_pearson, threshold_spearman, all_variable, out_dir):
-		self.df = pd.read_csv(filepath_or_buffer=data_file, index_col=0)
-		#self.variables = list(self.df.columns)
-		if all_variable:
-			self.variables = self.df.columns
-		else:
-			self.variables = all_variable
-
-
-		self.instance_name = self.df.index
-		self.threshold_pearson = threshold_pearson
-		self.threshold_spearman = threshold_spearman
-		self.out_dir = out_dir
-
-		self.axis_font = {'fontname': 'serif', 'size': 14, 'labelpad': 10}
-
-		self.title_font = {'fontname': 'serif', 'size': 14}
-
-	def plot_correlation(self, x, y, xlabel, ylabel, title):
-		fig = plt.figure(figsize=(16, 16))
-		ax_setting()
-		# plt.scatter(x=x, y=y, s=30, c='blue', alpha=0.1, edgecolors='none')
-		sns.jointplot(x, y,  kind="kde", color="g")
-		plt.xlabel(r'%s' %xlabel, **self.axis_font)
-		plt.ylabel(r'%s' %ylabel, **self.axis_font)
-		plt.title(title, **self.axis_font)
-		plt.savefig("%s/%s vs %s.pdf" % (self.out_dir, xlabel, ylabel))
-		release_mem(fig)
-
-	def correlation_matrix(self):
-
-		all_var_pair = itertools.combinations(self.variables, r=2)
-
-		this_df_pearson = pd.DataFrame(index=self.variables, columns=self.variables)
-		this_df_spear = pd.DataFrame(index=self.variables, columns=self.variables)
-
-		for pair in all_var_pair:
-
-			x = self.df[pair[0]]
-			y = self.df[pair[1]]
-			pearson, p_value = stats.pearsonr(x=x, y=y)
-			spear1, p_value = stats.spearmanr(a=x, b=y)
-			spear2, p_value = stats.spearmanr(a=y, b=x)
-
-			# if pearson > threshold_pearson:
-			self.plot_correlation(x=x, y=y, 
-				xlabel=pair[0], ylabel=pair[1], 
-				title="Pearson {0}".format(round(pearson, 3)))
-
-			pearson = abs(pearson)
-			spear1 = abs(spear1)
-			spear2 = abs(spear2)
-
-			if pearson > self.threshold_pearson:
-				this_df_pearson[pair[0]][pair[1]] = pearson
-				this_df_pearson[pair[1]][pair[0]] = pearson
-			else:
-				this_df_pearson[pair[0]][pair[1]] = 0
-				this_df_pearson[pair[1]][pair[0]] = 0
-
-			if spear1 > self.threshold_spearman:
-				this_df_spear[pair[0]][pair[1]] = spear1
-			else:
-				this_df_spear[pair[0]][pair[1]] = 0
-
-			if spear2 > self.threshold_spearman:
-				this_df_spear[pair[1]][pair[0]] = spear2
-			else:
-				this_df_spear[pair[1]][pair[0]] = 0
-
-			this_df_pearson[pair[0]][pair[0]] = 1
-			this_df_pearson[pair[1]][pair[1]] = 1
-			this_df_spear[pair[0]][pair[0]] = 1
-			this_df_spear[pair[1]][pair[1]] = 1
-
-
-		this_df_pearson.to_csv("%s/Pearson.csv" %self.out_dir)
-		this_df_spear.to_csv("%s/Spearman.csv" %self.out_dir)
-
-	def plot_task3(self):
-
-		self.correlation_matrix()
-
-		for type_ in ["Pearson", "Spearman"]:
-			X = pd.read_csv("%s/%s.csv" %(self.out_dir, type_), index_col=0)
-			X_MDS = X.copy()
-
-			X = X[X > 0.7]
-
-			fig = plt.figure(figsize=(16, 16))
-			ax = sns.heatmap(X)
-
-
-			for item in ax.get_yticklabels():
-				item.set_fontsize(8)
-				item.set_rotation(0)
-				item.set_fontname('serif')
-
-			for item in ax.get_xticklabels():
-				item.set_fontsize(8)
-				item.set_fontname('serif')
-				item.set_rotation(90)
-
-			plt.title("%s similarity" %(type_), **self.title_font)
-			plt.savefig("%s/%s.eps" %(self.out_dir, type_))
-			release_mem(fig)
 
 def get_subaxis():
 	fig = plt.figure(figsize=(8, 8))
@@ -604,25 +634,39 @@ def get_subaxis():
 
 	return main_ax, x_axis. y_axis
 
+def scatter_3d(points, save_at, label, color):
+	xs, ys, zs = points[0], points[1], points[2] #[:, 0], points_T[:, 1], points_T[:, 2]
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
 
-# def merge_2image(morph_df, df2, vmin, vmax, title, save_at, cmapdf2='jet'):
-# 	# from matplotlib.colors import LightSource
-# 	fig = plt.figure(figsize=(10, 10))
+	ax.scatter(xs, ys, zs, marker="o", color=color)
+	# ax.title(label)
+	ax.set_xlabel('X Label')
+	ax.set_ylabel('Y Label')
+	ax.set_zlabel('Z Label')
+	makedirs(save_at)
+	plt.savefig(save_at)
 
 
-# 	plt.imshow(morph_df.values, cmap='binary')
-# 	plt.colorbar()
 
-# 	plt.imshow(df2.values, cmap=cmapdf2, interpolation='none', 
-# 		vmin=vmin, vmax=vmax)
 
-# 	# cmap.set_bad('white')
-	
-# 	# plt.colorbar()
-# 	plt.xlabel('x', **axis_font)
-# 	plt.ylabel('y', **axis_font)
 
-# 	plt.title(title, **title_font)
 
-# 	makedirs(save_at)
-# 	plt.savefig(save_at)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
