@@ -79,6 +79,7 @@ def ax_setting_3d(ax):
 	plt.tight_layout(pad=1.1)
 
 
+<<<<<<< HEAD
 def scatter_plot(x, y, xvline=None, yhline=None, 
 	sigma=None, mode='scatter', lbl=None, name=None, 
 	x_label='x', y_label='y', 
@@ -159,6 +160,17 @@ def scatter_plot_4(x, y, color_array=None, xvlines=None, yhlines=None,
 	# 	main_ax.scatter(_x, _y, s=s, marker=_m, c=_c, alpha=_a, edgecolor="black")
 
 	
+=======
+def plot_density(values, save_at,  cmap_name, title, vmin, vmax, is_save2input=None):
+	# input: matrix [n_rows, n_cols] of any value
+	# output: figure
+	fig = plt.figure(figsize=(10, 10), dpi=300)
+
+	# if vmin is None and vmax is None:
+	# 	max_abs = 0.95 * max((abs(np.min(values)), abs(np.max(values))))
+	# 	vmin = -max_abs
+	# 	vmax = max_abs
+>>>>>>> 83e691d9399cf27e7a130dc5596a8948d8872392
 
 	# for xvline in xvlines:
 	#   main_ax.axvline(x=xvline, linestyle='-.', color='black')
@@ -257,6 +269,7 @@ def plot_density(values, save_at,  cmap_name,
 	# img = cmap(values)
 	# print (img)
 	print ("here", vmin, vmax)
+<<<<<<< HEAD
 
 	if is_lbl:
 		for lbl in set_labels:
@@ -266,6 +279,9 @@ def plot_density(values, save_at,  cmap_name,
 				plt.text(xt, yt, lbl)
 	plt.imshow(values, cmap=cmap, 
 		interpolation='none', vmin=vmin, vmax=vmax)
+=======
+	plt.imshow(values, cmap=cmap, interpolation='none', vmin=vmin, vmax=vmax)
+>>>>>>> 83e691d9399cf27e7a130dc5596a8948d8872392
 
 	# plt.colorbar()
 	# plt.xlabel('x', **axis_font)
