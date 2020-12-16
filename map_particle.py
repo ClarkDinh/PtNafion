@@ -154,8 +154,8 @@ def one_map(df, y_col):
 def map_particles(df):
 	y_cols = ["a_sum_value", "a_max_value", "a_var_value", # 
 			"b_max_value", "b_sum_value", "b_var_value"]
-	# for y_col in y_cols:
-	# 	one_map(df=df, y_col=y_col)
+	for y_col in y_cols:
+		one_map(df=df, y_col=y_col)
 
 	# # normal join-distribution
 	all_props = df.columns
